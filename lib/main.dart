@@ -6,7 +6,7 @@ import 'package:citroon/herbicides.dart';
 import 'package:citroon/info.dart';
 import 'package:citroon/pesticides.dart';
 import 'package:citroon/semences.dart';
-import 'package:citroon/signup.dart';
+import 'package:citroon/login.dart';
 import 'package:citroon/touslesproduits.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -19,7 +19,7 @@ import 'utils/user_model.dart';
 
 
 Future main() async {
- WidgetsFlutterBinding.ensureInitialized();
+await WidgetsFlutterBinding.ensureInitialized();
  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp( MyApp());
 }
@@ -118,7 +118,7 @@ class _HomePageState extends State<HomePage> {
     } else if (currentPage == DrawerSections.addproduct) {
       container = AddProductPage();
     } else if (currentPage == DrawerSections.signup) {
-      container = SignupPage();
+      container = LoginPage();
     } else if (currentPage == DrawerSections.info) {
       container = InfoPage();
     }

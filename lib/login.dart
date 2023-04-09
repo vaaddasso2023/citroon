@@ -1,36 +1,27 @@
 import 'package:citroon/utils/separator.dart';
-
-import 'firebase_options.dart';
-//import 'dart:js';
+import 'package:citroon/main.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:citroon/addproduct.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:provider/provider.dart';
-import 'main.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-
 import 'registration.dart';
 import 'services/google_sign_in.dart';
 import 'utils/colors_utils.dart';
 
 
-class SignupPage extends StatefulWidget {
-  const SignupPage ({Key? key}) : super(key: key);
+class LoginPage extends StatefulWidget {
+  const LoginPage ({Key? key}) : super(key: key);
 
   @override
-  _SignupPageState createState() => _SignupPageState();
+  _LoginPageState createState() => _LoginPageState();
 }
 
-class _SignupPageState extends State<SignupPage> {
+class _LoginPageState extends State<LoginPage> {
   // form key
   final _formKey = GlobalKey<FormState>();
 
 // editing controller
-  final TextEditingController emailController = new TextEditingController();
-  final TextEditingController passwordController = new TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
   // firebase
   final _auth = FirebaseAuth.instance;
@@ -105,7 +96,7 @@ class _SignupPageState extends State<SignupPage> {
           padding: EdgeInsets.fromLTRB(20, 15, 20, 15),
           minWidth: MediaQuery.of(context).size.width,
           onPressed: () {
-            signUp(emailController.text, passwordController.text);
+            signIn(emailController.text, passwordController.text);
           },
           child: Text(
             "Se connecter",
@@ -171,14 +162,13 @@ class _SignupPageState extends State<SignupPage> {
                                       fontWeight: FontWeight.bold,
                                       fontSize: 15),
                               ),
-                        )
+                            )
                           ],
                         ),
-
                      ],
                    ),
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 30),
                 Center(
                     child: SeparatorLineWithText(
                       text: 'Ou se connecter avec Google',
@@ -188,7 +178,7 @@ class _SignupPageState extends State<SignupPage> {
                       textColor: Colors.grey,
                     ),
                     ),
-                SizedBox(height: 20),
+                SizedBox(height: 30),
 
                 ElevatedButton(
                   onPressed: () async {
@@ -208,7 +198,6 @@ class _SignupPageState extends State<SignupPage> {
                         }
                         return Colors.white;
                       })
-
                   ),
 
                   child: Padding(
@@ -235,11 +224,8 @@ class _SignupPageState extends State<SignupPage> {
                     ),
                   ),
                 ),
-
               ],
-
             ),
-
           ),
         ),
       )
@@ -248,39 +234,39 @@ class _SignupPageState extends State<SignupPage> {
 
 
 // login function
-void signUp(String email, String password) async {
+void signIn(String email, String password) async {
   if (_formKey.currentState!.validate()) {
     try {
       await _auth
           .signInWithEmailAndPassword(email: email, password: password)
           .then((uid) => {
-        Fluttertoast.showToast(msg: "Login Successful"),
+        Fluttertoast.showToast(msg: "Connecté avec succes !"),
         Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => HomePage())),
       });
     } on FirebaseAuthException catch (error) {
       switch (error.code) {
         case "invalid-email":
-          errorMessage = "Your email address appears to be malformed.";
+          errorMessage = "Adresse email incorrecte.";
 
           break;
         case "wrong-password":
-          errorMessage = "Your password is wrong.";
+          errorMessage = "Mauvais mot de passe.";
           break;
         case "user-not-found":
-          errorMessage = "User with this email doesn't exist.";
+          errorMessage = "L'utilisateur avec cet email n'existe pas.";
           break;
         case "user-disabled":
-          errorMessage = "User with this email has been disabled.";
+          errorMessage = "L'utilisateur avec cet email a été désactivé.";
           break;
         case "too-many-requests":
-          errorMessage = "Too many requests";
+          errorMessage = "Trop de requêtes";
           break;
         case "operation-not-allowed":
-          errorMessage = "Signing in with Email and Password is not enabled.";
+          errorMessage = "La connexion avec l'email et le mot de passe n'est pas activée.";
           break;
         default:
-          errorMessage = "An undefined Error happened.";
+          errorMessage = "Une erreur non définie s'est produite.";
       }
       Fluttertoast.showToast(msg: errorMessage!);
       print(error.code);
