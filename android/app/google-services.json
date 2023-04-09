@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "860807262932",
+    "project_id": "citroon-1bce2",
+    "storage_bucket": "citroon-1bce2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:860807262932:android:8a03c8a1afec527cbbc141",
+        "android_client_info": {
+          "package_name": "org.vaadd.citroon"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "860807262932-hqed2qc8tklh7s72t0q4ec5m9rgrird2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCqNqljKizrVxle5nTiqtLo1-as9JxeDwo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "860807262932-hqed2qc8tklh7s72t0q4ec5m9rgrird2.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "860807262932-qujueh0ercrsg2d57nsk1g0tedho10vo.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "org.vaadd.citroon"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
