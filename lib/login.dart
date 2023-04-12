@@ -1,5 +1,7 @@
 import 'package:citroon/utils/separator.dart';
 import 'package:citroon/main.dart';
+import 'package:connectivity/connectivity.dart';
+import 'package:flutter/rendering.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -20,8 +22,8 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
 
 // editing controller
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController emailController = new TextEditingController();
+  final TextEditingController passwordController = new TextEditingController();
 
   // firebase
   final _auth = FirebaseAuth.instance;
@@ -88,22 +90,59 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ));
 
-    final loginButton = Material(
-      elevation: 5,
-      borderRadius: BorderRadius.circular(30),
-      color: Colors.white,
-      child: MaterialButton(
-          padding: EdgeInsets.fromLTRB(20, 15, 20, 15),
-          minWidth: MediaQuery.of(context).size.width,
-          onPressed: () {
+    final loginButton = SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton(
+          onPressed: () async {
+            bool isConnected = await checkInternetConnectivity();
+            if (isConnected){
             signIn(emailController.text, passwordController.text);
+            } else{
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text('Citroon'),
+                    content: Text('Veuillez vous connecter d\'abord'),
+                    actions: <Widget>[
+                      TextButton(
+                        child: Text('OK'),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
+            }
           },
+          style: ButtonStyle(
+              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                ),
+              ),
+              elevation: MaterialStateProperty.all<double>(5.0),
+              backgroundColor: MaterialStateProperty.resolveWith((
+                  states) {
+                if (states.contains(MaterialState.pressed)) {
+                  return Colors.grey;
+                }
+                return Colors.lightGreen;
+              })
+          ),
+
+
           child: Text(
             "Se connecter",
             textAlign: TextAlign.center,
             style: TextStyle(
-                fontSize: 20, color: Colors.grey, fontWeight: FontWeight.bold),
-          )),
+                fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
+          )
+
+      ),
     );
 
     return Scaffold(
@@ -122,15 +161,13 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-
-
-                SizedBox(height: 20), // Espacement entre les enfants
-
+                SizedBox(height: 35), // Espacement entre les enfants
                 Form(
+                  key: _formKey,
                     child: Column(
                       children: <Widget>[
                         SizedBox(
-                            height: 150,
+                            height: 100,
                             child: Image.asset(
                               "assets/images/logo.png",
                               fit: BoxFit.contain,
@@ -169,6 +206,9 @@ class _LoginPageState extends State<LoginPage> {
                    ),
                 ),
                 SizedBox(height: 30),
+
+                // Séparateur
+
                 Center(
                     child: SeparatorLineWithText(
                       text: 'Ou se connecter avec Google',
@@ -182,8 +222,30 @@ class _LoginPageState extends State<LoginPage> {
 
                 ElevatedButton(
                   onPressed: () async {
+                    bool isConnected = await checkInternetConnectivity();
+                    if (isConnected){
                    await signInWithGoogle(signInWithGoogle(context));
+                    } else {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('Citroon'),
+                            content: Text('Veuillez vous connecter d\'abord'),
+                            actions: <Widget>[
+                              TextButton(
+                                child: Text('OK'),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    }
                   },
+
                   style: ButtonStyle(
                       shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                         RoundedRectangleBorder(
@@ -194,9 +256,9 @@ class _LoginPageState extends State<LoginPage> {
                       backgroundColor: MaterialStateProperty.resolveWith((
                           states) {
                         if (states.contains(MaterialState.pressed)) {
-                          return Colors.black26;
+                          return Colors.grey;
                         }
-                        return Colors.white;
+                        return Colors.lightGreen;
                       })
                   ),
 
@@ -218,7 +280,7 @@ class _LoginPageState extends State<LoginPage> {
                           style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: Colors.grey),
+                              color: Colors.white),
                         ),
                       ],
                     ),
@@ -234,43 +296,47 @@ class _LoginPageState extends State<LoginPage> {
 
 
 // login function
-void signIn(String email, String password) async {
-  if (_formKey.currentState!.validate()) {
-    try {
-      await _auth
-          .signInWithEmailAndPassword(email: email, password: password)
-          .then((uid) => {
-        Fluttertoast.showToast(msg: "Connecté avec succes !"),
+  void signIn(String email, String password) async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        await _auth.signInWithEmailAndPassword(email: email, password: password);
+        Fluttertoast.showToast(msg: "Connecté avec succès !");
         Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => HomePage())),
-      });
-    } on FirebaseAuthException catch (error) {
-      switch (error.code) {
-        case "invalid-email":
-          errorMessage = "Adresse email incorrecte.";
-
-          break;
-        case "wrong-password":
-          errorMessage = "Mauvais mot de passe.";
-          break;
-        case "user-not-found":
-          errorMessage = "L'utilisateur avec cet email n'existe pas.";
-          break;
-        case "user-disabled":
-          errorMessage = "L'utilisateur avec cet email a été désactivé.";
-          break;
-        case "too-many-requests":
-          errorMessage = "Trop de requêtes";
-          break;
-        case "operation-not-allowed":
-          errorMessage = "La connexion avec l'email et le mot de passe n'est pas activée.";
-          break;
-        default:
-          errorMessage = "Une erreur non définie s'est produite.";
+            MaterialPageRoute(builder: (context) => HomePage()));
+      } on FirebaseAuthException catch (error) {
+        String errorMessage;
+        switch (error.code) {
+          case "invalid-email":
+            errorMessage = "Adresse email incorrecte.";
+            break;
+          case "wrong-password":
+            errorMessage = "Mauvais mot de passe.";
+            break;
+          case "user-not-found":
+            errorMessage = "L'utilisateur avec cet email n'existe pas.";
+            break;
+          case "user-disabled":
+            errorMessage = "L'utilisateur avec cet email a été désactivé.";
+            break;
+          case "too-many-requests":
+            errorMessage = "Trop de requêtes.";
+            break;
+          case "operation-not-allowed":
+            errorMessage =
+            "La connexion avec l'email et le mot de passe n'est pas activée.";
+            break;
+          default:
+            errorMessage = "Une erreur non définie s'est produite.";
+        }
+        Fluttertoast.showToast(msg: errorMessage);
+        print(error.code);
       }
-      Fluttertoast.showToast(msg: errorMessage!);
-      print(error.code);
     }
   }
-}
+
+  Future<bool> checkInternetConnectivity() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    return connectivityResult == ConnectivityResult.mobile || connectivityResult == ConnectivityResult.wifi;
+  }
+
 }

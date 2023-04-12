@@ -293,7 +293,28 @@ Widget build(BuildContext context) {
                           FocusScope.of(context).requestFocus(FocusNode());
                         }
                       },
-                      child: const Text("Envoyer")),
+                      style: ButtonStyle(
+                          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30.0),
+                            ),
+                          ),
+                          elevation: MaterialStateProperty.all<double>(5.0),
+                          backgroundColor: MaterialStateProperty.resolveWith((
+                              states) {
+                            if (states.contains(MaterialState.pressed)) {
+                              return Colors.grey;
+                            }
+                            return Colors.lightGreen;
+                          })
+                      ),
+
+                      child: const Text("Envoyer",
+                          style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
+                      )),
 
                 ),
                 const SizedBox(height: 12,),

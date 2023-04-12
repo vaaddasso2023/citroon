@@ -48,6 +48,12 @@ dependencies:
   image_cropper: ^2.0.3
   image_picker: ^0.8.7
 
+  # Connectivity
+  connectivity: ^3.0.6
+  connectivity_for_web: ^0.4.0+1
+  connectivity_macos: ^0.2.1+2
+  connectivity_platform_interface: ^2.0.1
+
   #Toast
   fluttertoast: ^8.0.8
 

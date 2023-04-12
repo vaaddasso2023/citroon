@@ -1,6 +1,7 @@
 import 'package:citroon/utils/colors_utils.dart';
 import 'package:citroon/utils/user_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -25,7 +26,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final _formKey = GlobalKey<FormState>();
   // editing Controller
   final firstNameEditingController = new TextEditingController();
-  final secondNameEditingController = new TextEditingController();
+  final nameEditingController = new TextEditingController();
   final emailEditingController = new TextEditingController();
   final passwordEditingController = new TextEditingController();
   final confirmPasswordEditingController = new TextEditingController();
@@ -63,7 +64,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
     //second name field
     final secondNameField = TextFormField(
         autofocus: false,
-        controller: secondNameEditingController,
+        controller: nameEditingController,
         keyboardType: TextInputType.name,
         validator: (value) {
           if (value!.isEmpty) {
@@ -72,7 +73,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
           return null;
         },
         onSaved: (value) {
-          secondNameEditingController.text = value!;
+          nameEditingController.text = value!;
         },
         textInputAction: TextInputAction.next,
         decoration: InputDecoration(
@@ -163,34 +164,70 @@ class _RegistrationPageState extends State<RegistrationPage> {
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
           ),
-        ));
+        )
+    );
+
 
     //signup button
-    final signUpButton = Material(
-      elevation: 5,
-      borderRadius: BorderRadius.circular(30),
-      color: Colors.white,
-      child: MaterialButton(
-          padding: EdgeInsets.fromLTRB(20, 15, 20, 15),
-          minWidth: MediaQuery.of(context).size.width,
-          onPressed: () {
+    final signUpButton = SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton(
+          onPressed: () async {
+            bool isConnected = await checkInternetConnectivity();
+            if (isConnected) {
             signUp(emailEditingController.text, passwordEditingController.text);
+            } else {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text('Citroon'),
+                    content: Text('Connexion internet perdue ! Veuillez vous connecter SVP'),
+                    actions: <Widget>[
+                      TextButton(
+                        child: Text('OK'),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
+            }
           },
+          style: ButtonStyle(
+              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30.0),
+                ),
+              ),
+              elevation: MaterialStateProperty.all<double>(5.0),
+              backgroundColor: MaterialStateProperty.resolveWith((
+                  states) {
+                if (states.contains(MaterialState.pressed)) {
+                  return Colors.grey;
+                }
+                return Colors.lightGreen;
+              })
+          ),
           child: Text(
             "S'enregistrer",
             textAlign: TextAlign.center,
             style: TextStyle(
-                fontSize: 20, color: Colors.grey, fontWeight: FontWeight.bold),
+                fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
           )),
     );
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        backgroundColor: Colors.green[600],
+        title: const Text('CITROON'),
+        elevation: 5,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.grey),
+          icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
             // passing this to our root
             Navigator.of(context).pop();
@@ -208,7 +245,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                 ], begin: Alignment.topCenter, end: Alignment.bottomCenter
                 )),
             child: Padding(
-              padding: const EdgeInsets.all(36.0),
+              padding: const EdgeInsets.all(25.0),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -216,13 +253,13 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
                     SizedBox(
-                        height: 150,
+                        height: 80,
                         child: Image.asset(
                           "assets/images/logo.png",
                           fit: BoxFit.contain,
                           width: 100,
                         )),
-                    SizedBox(height: 35),
+                    SizedBox(height: 55),
                     firstNameField,
                     SizedBox(height: 20),
                     secondNameField,
@@ -232,9 +269,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
                     passwordField,
                     SizedBox(height: 20),
                     confirmPasswordField,
-                    SizedBox(height: 20),
+                    SizedBox(height: 25),
                     signUpButton,
-                    SizedBox(height: 15),
+                    SizedBox(height: 30),
                   ],
                 ),
               ),
@@ -295,7 +332,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
     userModel.email = user!.email;
     userModel.uid = user.uid;
     userModel.firstName = firstNameEditingController.text;
-    userModel.secondName = secondNameEditingController.text;
+    userModel.name = nameEditingController.text;
 
     await firebaseFirestore
         .collection("users")
@@ -307,5 +344,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
         (context),
         MaterialPageRoute(builder: (context) => HomePage()),
             (route) => false);
+  }
+
+  Future<bool> checkInternetConnectivity() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    return connectivityResult == ConnectivityResult.mobile || connectivityResult == ConnectivityResult.wifi;
   }
 }
