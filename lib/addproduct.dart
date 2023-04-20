@@ -1,13 +1,8 @@
 import 'dart:typed_data';
-import 'package:citroon/main.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-import 'my_drawer_header.dart';
 import 'login.dart';
-
-
-
 
 class AddProductPage extends StatefulWidget {
   const AddProductPage({Key? key}) : super(key: key);
@@ -72,10 +67,10 @@ final _formKey = GlobalKey<FormState>();
 Widget build(BuildContext context) {
   produits();
   return Scaffold(
-    appBar: AppBar(
-      backgroundColor: Colors.grey[400],
-      title: const Text('Ajout de produit', style: TextStyle( fontSize: 18 , color: Colors.white,),),
-    ),
+   // appBar: AppBar(
+     // backgroundColor: Colors.grey[400],
+     // title: const Text('Ajout de produit', style: TextStyle( fontSize: 18 , color: Colors.white,),),
+   // ),
     body: SingleChildScrollView (
       child: Container(
           margin: const EdgeInsets.all(25),
@@ -321,7 +316,7 @@ Widget build(BuildContext context) {
 
                 // Lien pour aller sur la page d'inscription et de connexion
                 SizedBox(
-                 child: InkWell(
+                 child: GestureDetector(
                    onTap: (){
                      Navigator.pop(
                       context,

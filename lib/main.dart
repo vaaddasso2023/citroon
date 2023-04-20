@@ -100,6 +100,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  bool isConnected = false;
   var currentPage = DrawerSections.touslesproduits;
 
   @override
@@ -117,22 +118,16 @@ class _HomePageState extends State<HomePage> {
       container = PesticidesPage();
     } else if (currentPage == DrawerSections.addproduct) {
       container = AddProductPage();
-    } else if (currentPage == DrawerSections.signup) {
+   } else if (currentPage == DrawerSections.signin) {
       container = LoginPage();
-    } else if (currentPage == DrawerSections.info) {
+    }
+    else if (currentPage == DrawerSections.info) {
       container = InfoPage();
     }
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green[600],
         title: const Text('CITROON'),
-        actions: [
-          IconButton(onPressed: () async {
-            await GoogleSignIn().signOut();
-            FirebaseAuth.instance.signOut();
-
-                }, icon: Icon(Icons.login_outlined))
-        ],
       ),
       body: container,
       drawer: Drawer(
@@ -151,6 +146,12 @@ class _HomePageState extends State<HomePage> {
   }
   // ignore: non_constant_identifier_names
   Widget MyDrawerList(){
+    IconData icon = isConnected ? Icons.power_settings_new_outlined : Icons.login_outlined;
+    String page = isConnected ? 'Connexion' : 'Déconnexion';
+    // Déterminez les icônes et les pages associées en fonction de l'état de connexion et de la page actuelle
+    //if (currentPage == DrawerSections.touslesproduits) {
+     // currentPage = isConnected ? DrawerSections.touslesproduits : DrawerSections.signin;
+   // }
     return Container(
       padding: EdgeInsets.only(
         top:15,
@@ -170,42 +171,62 @@ class _HomePageState extends State<HomePage> {
               currentPage == DrawerSections.pesticides ? true: false),
           SizedBox(height: 100), // espace de 160 pixels entre les deux paragraphes
           menuItem(6, "Ajouter un produit", Icons.add,
-              currentPage == DrawerSections.addproduct ? true: false),
+            currentPage == DrawerSections.addproduct ? true: false),
+
           SizedBox(height: 5), // espace de 5 pixels entre les deux paragraphes
-          menuItem (7, "Connexion", Icons.login_outlined,
-              currentPage == DrawerSections.signup ? true: false),
+        menuItem(7, isConnected ? 'Connexion' : 'Déconnexion', icon,
+            currentPage == DrawerSections.signin ? true : false, page),
           SizedBox(height: 5), // espace de 5 pixels entre les deux paragraphes
           menuItem(8, "Info", Icons.report_outlined,
               currentPage == DrawerSections.info ? true: false),
-
         ],
       ),
     );
-
   }
-  Widget menuItem(int id, String title, IconData icon, bool selected){
+
+  Widget menuItem(int id, String title, IconData icon, bool selected, [String? page]){
     return Material(
       color: selected ? Colors.grey[300] : Colors.transparent,
       child: InkWell(
         onTap: (){
           Navigator.pop(context);
           setState(() {
-            if (id==1){
+            switch (id){
+              case 1:
               currentPage = DrawerSections.touslesproduits;
-            } else if (id==2) {
+              break;
+              case 2:
               currentPage = DrawerSections.engrais;
-            } else if (id==3){
+              break;
+              case 3:
               currentPage = DrawerSections.semences;
-            } else if (id==4){
+              break;
+              case 4:
               currentPage = DrawerSections.herbicides;
-            } else if (id==5){
+              break;
+              case 5:
               currentPage = DrawerSections.pesticides;
-            } else if (id==6){
+              break;
+              case 6 :
               currentPage = DrawerSections.addproduct;
-            }else if (id==7){
-              currentPage = DrawerSections.signup;
-            }else if (id==8){
+              break;
+              case 7:
+              setState(() {
+              if (isConnected = true) {
+              GoogleSignIn().signOut();
+              FirebaseAuth.instance.signOut();
+              currentPage = DrawerSections.signin;
+              isConnected = true;
+               } else if (isConnected = false){
+              currentPage = DrawerSections.touslesproduits;
+              } else{
+              // RAS
+              }
+              });
+              break;
+              case 8:
               currentPage = DrawerSections.info;
+              break;
             }
           });
         },
@@ -218,7 +239,7 @@ class _HomePageState extends State<HomePage> {
                   child: Icon(
               icon,
             size: 20,
-            color: Colors.black,
+            color: Colors.black45,
           ),
               ),
               Expanded(
@@ -245,6 +266,6 @@ enum DrawerSections{
   semences,
   herbicides,
   addproduct,
-  signup,
+  signin,
   info,
 }

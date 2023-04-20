@@ -30,13 +30,26 @@ class _MyHeaderDrawerState extends State<MyHeaderDrawer> {
             mainAxisAlignment: MainAxisAlignment.center,
            children: [
              SizedBox(height: 15),
-             CircleAvatar(
-               radius: 40,
-               backgroundImage: NetworkImage(user?.photoURL ?? ''),
+             ClipOval(
+               child: Container(
+                 height: 70,
+                 width: 70,
+                 decoration: BoxDecoration(
+                   shape: BoxShape.circle,
+                   image: DecorationImage(
+                     fit: BoxFit.cover,
+                     image: NetworkImage(user?.photoURL ?? ''),
+                   ),
+                 ),
                  child: user?.photoURL == null
-                     ? Image.asset(defaultAvatar)
+                     ? Image.asset(
+                   defaultAvatar,
+                   fit: BoxFit.cover,
+                 )
                      : null,
+               ),
              ),
+
              SizedBox(height: 8),
 
              Text(
@@ -49,14 +62,9 @@ class _MyHeaderDrawerState extends State<MyHeaderDrawer> {
                style: TextStyle(color: Colors.grey[200], fontSize: 14,),
              ),
            ],
-
-
       ),
-
     );
-
   }
-
 }
 
 

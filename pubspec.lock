@@ -225,7 +225,7 @@ packages:
     source: hosted
     version: "8.2.1"
   google_identity_services_web:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: google_identity_services_web
       sha256: "7940fdc3b1035db4d65d387c1bdd6f9574deaa6777411569c05ecc25672efacd"

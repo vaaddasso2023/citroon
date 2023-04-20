@@ -1,3 +1,4 @@
+import 'package:citroon/touslesproduits.dart';
 import 'package:citroon/utils/separator.dart';
 import 'package:citroon/main.dart';
 import 'package:connectivity/connectivity.dart';
@@ -30,6 +31,7 @@ class _LoginPageState extends State<LoginPage> {
 
   // string for displaying the error Message
   String? errorMessage;
+
 
   @override
   Widget build(BuildContext context) {
@@ -219,7 +221,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     ),
                 SizedBox(height: 30),
-
+                                          // Connexion avec GMAIL
                 ElevatedButton(
                   onPressed: () async {
                     bool isConnected = await checkInternetConnectivity();
@@ -231,7 +233,7 @@ class _LoginPageState extends State<LoginPage> {
                         builder: (BuildContext context) {
                           return AlertDialog(
                             title: Text('Citroon'),
-                            content: Text('Veuillez vous connecter d\'abord'),
+                            content: Text('Veuillez vous connecter à internet d\'abord'),
                             actions: <Widget>[
                               TextButton(
                                 child: Text('OK'),
@@ -294,7 +296,6 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-
 // login function
   void signIn(String email, String password) async {
     if (_formKey.currentState!.validate()) {
@@ -302,7 +303,7 @@ class _LoginPageState extends State<LoginPage> {
         await _auth.signInWithEmailAndPassword(email: email, password: password);
         Fluttertoast.showToast(msg: "Connecté avec succès !");
         Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => HomePage()));
+            MaterialPageRoute(builder: (context) => AllproductPage()));
       } on FirebaseAuthException catch (error) {
         String errorMessage;
         switch (error.code) {
