@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:responsive_grid_list/responsive_grid_list.dart';
 import 'semences.dart';
 import 'utils/colors_utils.dart';
 
@@ -17,7 +18,7 @@ class _AllproductPageState extends State<AllproductPage> {
   @override
   void initState() {
     super.initState();
-    Timer.periodic(Duration(seconds: 5), (Timer timer) {
+    Timer.periodic(const Duration(seconds: 5), (Timer timer) {
       if (_currentPage < 2) {
         _currentPage++;
       } else {
@@ -25,7 +26,7 @@ class _AllproductPageState extends State<AllproductPage> {
       }
       _controller.animateToPage(
         _currentPage,
-        duration: Duration(milliseconds: 500),
+        duration: const Duration(milliseconds: 500),
         curve: Curves.easeIn,
       );
     });
@@ -35,6 +36,7 @@ class _AllproductPageState extends State<AllproductPage> {
   Widget build(BuildContext context) {
     return  Scaffold(
       body: Container(
+        padding: const EdgeInsets.all(5.0),
         decoration: BoxDecoration(
             gradient: LinearGradient(colors: [
               hexStringToColor("f9f9f9"),
@@ -44,103 +46,142 @@ class _AllproductPageState extends State<AllproductPage> {
             )),
 
         child: Column(
-
             children: [
               Expanded(
-                child: ListView(
+                child: ResponsiveGridList (
+                  minItemWidth: 165,
+                  horizontalGridMargin: 2,
+                  verticalGridMargin: 2,
                   children: [
                     Card(
-                      child: ListTile(
-                        leading: FlutterLogo(size: 72.0),
-                        title: Text('Titre ou nom du produit'),
-                        subtitle:
-                        Text('Ici vous trouverez un petit descriptif de votre produit.'),
-                        trailing: Icon(Icons.more_vert),
-                        isThreeLine: true,
+                      child: Stack(
+                        children: [
+                          ListTile(
+                            contentPadding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 60.0),
+                            title: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: const <Widget>[
+                                FlutterLogo(size:48.0),
+                                SizedBox(height: 5),
+                                Text('Ecopticide',
+                                  style: TextStyle(
+                                    color: Colors.black54,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                                Expanded(
+                                  child: Text(
+                                    'Ceci est un produit venu de jupiter pour guérir la terre des ses maux ',
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 2,
+                                    style: TextStyle(
+                                      color: Colors.black54,
+                                      fontSize: 13,
+                                    ),
+
+                                  ),
+                                ),
+                              ],
+                            ),
+                            trailing: InkWell(
+                              onTap: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      title: const Text('Télécharger la fiche technique ?',
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(context),
+                                          child: const Text('Annuler'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            // Télécharger le PDF ici
+                                            Navigator.pop(context);
+                                          },
+                                          child: const Text('Télécharger'),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(2),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: const [
+                                    Icon(Icons.cloud_download_outlined),
+                                    SizedBox(height: 5),
+                                    Text('Fiche',
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 10,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 10,
+                            right: 10,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.blue,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text(
+                                'XOF 20 000',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const Positioned(
+                            bottom: 10,
+                            left: 10,
+                            child: Icon(
+                              Icons.verified,
+                              color: Colors.green,
+                              size: 18,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
 
-                    Card(
-                      child: ListTile(
-                        leading: FlutterLogo(size: 72.0),
-                        title: Text('Titre ou nom du produit'),
-                        subtitle:
-                        Text('Ici vous trouverez un petit descriptif de votre produit.'),
-                        trailing: Icon(Icons.more_vert),
-                        isThreeLine: true,
-                      ),
-                    ),
-
-                    Card(
-                      child: ListTile(
-                        leading: FlutterLogo(size: 72.0),
-                        title: Text('Titre ou nom du produit'),
-                        subtitle:
-                        Text('Ici vous trouverez un petit descriptif de votre produit.'),
-                        trailing: Icon(Icons.more_vert),
-                        isThreeLine: true,
-                      ),
-                    ),
-
-                    Card(
-                      child: ListTile(
-                        leading: FlutterLogo(size: 72.0),
-                        title: Text('Titre ou nom du produit'),
-                        subtitle:
-                        Text('Ici vous trouverez un petit descriptif de votre produit.'),
-                        trailing: Icon(Icons.more_vert),
-                        isThreeLine: true,
-                      ),
-                    ),
-
-                    Card(
-                      child: ListTile(
-                        leading: FlutterLogo(size: 72.0),
-                        title: Text('Titre ou nom du produit'),
-                        subtitle:
-                        Text('Ici vous trouverez un petit descriptif de votre produit.'),
-                        trailing: Icon(Icons.more_vert),
-                        isThreeLine: true,
-                      ),
-                    ),
-
-                    Card(
-                      child: ListTile(
-                        leading: FlutterLogo(size: 72.0),
-                        title: Text('Titre ou nom du produit'),
-                        subtitle:
-                        Text('Ici vous trouverez un petit descriptif de votre produit.'),
-                        trailing: Icon(Icons.more_vert),
-                        isThreeLine: true,
-                      ),
-                    ),
-
-                    Card(
-                      child: ListTile(
-                        leading: FlutterLogo(size: 72.0),
-                        title: Text('Titre ou nom du produit'),
-                        subtitle:
-                        Text('Ici vous trouverez un petit descriptif de votre produit.'),
-                        trailing: Icon(Icons.more_vert),
-                        isThreeLine: true,
-                      ),
-                    ),
 
                   ],
                 ),
               ),
               Container(
-                padding: EdgeInsets.only(bottom: 20.0),
+                padding: const EdgeInsets.only(bottom: 20.0),
                 height: 130.0,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     IconButton(
-                      icon: Icon(Icons.arrow_circle_left_rounded),
+                      icon: const Icon(Icons.arrow_circle_left_rounded),
                       color: Colors.lightGreen,
                       onPressed: () {
                         _controller.previousPage(
-                          duration: Duration(milliseconds: 500),
+                          duration: const Duration(milliseconds: 500),
                           curve: Curves.easeIn,
                         );
                       },
@@ -154,11 +195,11 @@ class _AllproductPageState extends State<AllproductPage> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10.0),
                             ),
-                            child: Container(
+                            child: SizedBox(
                               width: 110.0,
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
+                                children: const [
                                   Expanded(
                                     child: Image(
                                       image: AssetImage('assets/images/herbicide.png'),
@@ -174,11 +215,11 @@ class _AllproductPageState extends State<AllproductPage> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10.0),
                             ),
-                            child: Container(
+                            child: SizedBox(
                               width: 110.0,
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
+                                children: const [
                                   Expanded(
                                     child: Image(
                                       image: AssetImage('assets/images/pesticide.png'),
@@ -194,11 +235,11 @@ class _AllproductPageState extends State<AllproductPage> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10.0),
                             ),
-                            child: Container(
+                            child: SizedBox(
                               width: 110.0,
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
+                                children: const [
                                   Expanded(
                                     child: Image(
                                       image: AssetImage('assets/images/engrais.png'),
@@ -210,11 +251,77 @@ class _AllproductPageState extends State<AllproductPage> {
                             ),
                           ),
 
+                        Expanded(child:
+                        Column(
+                          children: [
+                            Card(
+                              elevation: 4.0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                              child: SizedBox(
+                                width: 110.0,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: const [
+                                    Expanded(
+                                      child: Image(
+                                        image: AssetImage('assets/images/herbicide.png'),
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            Card(
+                              elevation: 4.0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                              child: SizedBox(
+                                width: 110.0,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: const [
+                                    Expanded(
+                                      child: Image(
+                                        image: AssetImage('assets/images/pesticide.png'),
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            Card(
+                              elevation: 4.0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                              child: SizedBox(
+                                width: 110.0,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: const [
+                                    Expanded(
+                                      child: Image(
+                                        image: AssetImage('assets/images/engrais.png'),
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        )),
+
                         GestureDetector(
                               onTap: () {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => SeedPage()),
+                                  MaterialPageRoute(builder: (context) => const SeedPage()),
                                 );
                               },
 
@@ -223,11 +330,11 @@ class _AllproductPageState extends State<AllproductPage> {
                               shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10.0),
                               ),
-                            child: Container(
+                            child: SizedBox(
                               width: 110.0,
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
+                                children: const [
                                   Expanded(
                                       child: Image(
                                   image: AssetImage('assets/images/semence.png'),
@@ -249,11 +356,11 @@ class _AllproductPageState extends State<AllproductPage> {
                       ),
                     ),
                     IconButton(
-                      icon: Icon(Icons.arrow_circle_right_rounded),
+                      icon: const Icon(Icons.arrow_circle_right_rounded),
                       color: Colors.lightGreen,
                       onPressed: () {
                         _controller.nextPage(
-                          duration: Duration(milliseconds: 500),
+                          duration: const Duration(milliseconds: 500),
                           curve: Curves.easeIn,
                         );
                       },

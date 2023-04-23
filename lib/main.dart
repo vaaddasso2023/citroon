@@ -216,7 +216,7 @@ class _HomePageState extends State<HomePage> {
               GoogleSignIn().signOut();
               FirebaseAuth.instance.signOut();
               currentPage = DrawerSections.signin;
-              isConnected = true;
+              //isConnected = true;
                } else if (isConnected = false){
               currentPage = DrawerSections.touslesproduits;
               } else{
