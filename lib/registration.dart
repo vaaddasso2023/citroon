@@ -182,20 +182,45 @@ class _RegistrationPageState extends State<RegistrationPage> {
                 context: context,
                 builder: (BuildContext context) {
                   return AlertDialog(
-                    title: Text('Citroon'),
-                    content: Text('Connexion internet perdue ! Veuillez vous connecter SVP'),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15.0),
+                    ),
+                    content: Text('Veuillez vous connecter à internet d\'abord !'),
                     actions: <Widget>[
                       TextButton(
-                        child: Text('OK'),
+                        child: Center(
+                          child: Text('Fermer',
+                            style: TextStyle(color: Colors.white),),
+                        ),
                         onPressed: () {
                           Navigator.of(context).pop();
                         },
+                        style: ButtonStyle(
+                            shape: MaterialStatePropertyAll<RoundedRectangleBorder>(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15.0),
+                                )
+                            ),
+                            elevation: MaterialStateProperty.all<double>(1.0),
+                            backgroundColor: MaterialStateProperty.resolveWith((
+                                states) {
+                              if (states.contains(MaterialState.pressed)) {
+                                return Colors.green;
+                              }
+                              return Colors.green;
+                            })
+                        ),
                       ),
                     ],
                   );
                 },
               );
             }
+            Center(
+              child: CircularProgressIndicator(
+                valueColor: new AlwaysStoppedAnimation<Color>(Colors.green),
+              ),
+            );
           },
           style: ButtonStyle(
               shape: MaterialStateProperty.all<RoundedRectangleBorder>(
@@ -313,7 +338,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
           default:
             errorMessage = "Une erreur non définie s'est produite.";
         }
-        Fluttertoast.showToast(msg: errorMessage!);
+        Fluttertoast.showToast(
+          msg: errorMessage!,
+          gravity: ToastGravity.CENTER,
+        );
         print(error.code);
       }
     }
@@ -338,7 +366,20 @@ class _RegistrationPageState extends State<RegistrationPage> {
         .collection("users")
         .doc(user.uid)
         .set(userModel.toMap());
-    Fluttertoast.showToast(msg: "Le compte a été créé avec succès :) ");
+    Center(
+      child: CircularProgressIndicator(
+        valueColor: new AlwaysStoppedAnimation<Color>(Colors.green),
+      ),
+    );
+
+    Fluttertoast.showToast(msg: "Le compte a été créé avec succès :) ",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+        fontSize: 16.0
+    );
 
     Navigator.pushAndRemoveUntil(
         (context),

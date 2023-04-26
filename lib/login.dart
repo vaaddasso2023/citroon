@@ -100,19 +100,40 @@ class _LoginPageState extends State<LoginPage> {
             bool isConnected = await checkInternetConnectivity();
             if (isConnected){
             signIn(emailController.text, passwordController.text);
-            } else{
+
+            } else {
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
                   return AlertDialog(
-                    title: Text('Citroon'),
-                    content: Text('Veuillez vous connecter d\'abord'),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15.0),
+                    ),
+                    content: Text('Veuillez vous connecter à internet d\'abord !'),
                     actions: <Widget>[
                       TextButton(
-                        child: Text('OK'),
+                        child: Center(
+                          child: Text('Fermer',
+                            style: TextStyle(color: Colors.white),),
+                        ),
                         onPressed: () {
                           Navigator.of(context).pop();
                         },
+                        style: ButtonStyle(
+                            shape: MaterialStatePropertyAll<RoundedRectangleBorder>(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15.0),
+                                )
+                            ),
+                            elevation: MaterialStateProperty.all<double>(1.0),
+                            backgroundColor: MaterialStateProperty.resolveWith((
+                                states) {
+                              if (states.contains(MaterialState.pressed)) {
+                                return Colors.green;
+                              }
+                              return Colors.green;
+                            })
+                        ),
                       ),
                     ],
                   );
@@ -232,20 +253,45 @@ class _LoginPageState extends State<LoginPage> {
                         context: context,
                         builder: (BuildContext context) {
                           return AlertDialog(
-                            title: Text('Citroon'),
-                            content: Text('Veuillez vous connecter à internet d\'abord'),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15.0),
+                            ),
+                            content: Text('Veuillez vous connecter à internet d\'abord !'),
                             actions: <Widget>[
                               TextButton(
-                                child: Text('OK'),
+                                child: Center(
+                                  child: Text('Fermer',
+                                    style: TextStyle(color: Colors.white),),
+                                ),
                                 onPressed: () {
                                   Navigator.of(context).pop();
                                 },
+                                style: ButtonStyle(
+                                    shape: MaterialStatePropertyAll<RoundedRectangleBorder>(
+                                        RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(15.0),
+                                        )
+                                    ),
+                                    elevation: MaterialStateProperty.all<double>(1.0),
+                                    backgroundColor: MaterialStateProperty.resolveWith((
+                                        states) {
+                                      if (states.contains(MaterialState.pressed)) {
+                                        return Colors.green;
+                                      }
+                                      return Colors.green;
+                                    })
+                                ),
                               ),
                             ],
                           );
                         },
                       );
                     }
+                    Center(
+                      child: CircularProgressIndicator(
+                        valueColor: new AlwaysStoppedAnimation<Color>(Colors.green),
+                      ),
+                    );
                   },
 
                   style: ButtonStyle(
@@ -329,7 +375,11 @@ class _LoginPageState extends State<LoginPage> {
           default:
             errorMessage = "Une erreur non définie s'est produite.";
         }
-        Fluttertoast.showToast(msg: errorMessage);
+        Fluttertoast.showToast(
+            msg: errorMessage,
+            gravity: ToastGravity.CENTER,
+            backgroundColor: Colors.green,
+        );
         print(error.code);
       }
     }

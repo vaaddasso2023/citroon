@@ -35,63 +35,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class FirstLoad extends StatelessWidget {
-  const FirstLoad({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: SplashScreen(),
-    );
-  }
-}
-
-class SplashScreen extends StatefulWidget {
-  @override
-  _SplashScreenState createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends State<SplashScreen> {
-  User? user = FirebaseAuth.instance.currentUser;
-  UserModel loggedInUser = UserModel();
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    Timer(Duration(seconds: 3), () {
-      Navigator.of(context)
-          .pushReplacement(MaterialPageRoute(builder: (_) => HomePage()));
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.green[600],
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // logo here
-            Image.asset(
-              'assets/images/logo.png',
-              height: 120,
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-            )
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-
-
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -102,6 +45,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   bool isConnected = false;
   var currentPage = DrawerSections.touslesproduits;
+  User? user = FirebaseAuth.instance.currentUser;
+  UserModel loggedInUser = UserModel();
 
   @override
   Widget build(BuildContext context) {
@@ -148,10 +93,7 @@ class _HomePageState extends State<HomePage> {
   Widget MyDrawerList(){
     IconData icon = isConnected ? Icons.power_settings_new_outlined : Icons.login_outlined;
     String page = isConnected ? 'Connexion' : 'Déconnexion';
-    // Déterminez les icônes et les pages associées en fonction de l'état de connexion et de la page actuelle
-    //if (currentPage == DrawerSections.touslesproduits) {
-     // currentPage = isConnected ? DrawerSections.touslesproduits : DrawerSections.signin;
-   // }
+
     return Container(
       padding: EdgeInsets.only(
         top:15,

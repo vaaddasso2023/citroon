@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'package:card_loading/card_loading.dart';
 import 'package:flutter/material.dart';
+
 import 'package:responsive_grid_list/responsive_grid_list.dart';
 import 'semences.dart';
 import 'utils/colors_utils.dart';
@@ -14,6 +16,7 @@ class AllproductPage extends StatefulWidget {
 class _AllproductPageState extends State<AllproductPage> {
   final PageController _controller = PageController(initialPage: 0);
   int _currentPage = 0;
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -34,6 +37,11 @@ class _AllproductPageState extends State<AllproductPage> {
 
   @override
   Widget build(BuildContext context) {
+    Future.delayed(Duration(seconds: 2)).then((value) {
+      setState(() {
+        isLoading = false;
+      });
+    });
     return  Scaffold(
       body: Container(
         padding: const EdgeInsets.all(5.0),
@@ -54,7 +62,17 @@ class _AllproductPageState extends State<AllproductPage> {
                   verticalGridMargin: 2,
                   children: [
                     Card(
-                      child: Stack(
+                      elevation: 5.0,
+                      child:
+                      SizedBox(
+                          width: 110.0,
+                          child: isLoading
+                            ? CardLoading(
+                          height: 100,
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                          margin: EdgeInsets.only(bottom: 0),
+                        )
+                        : Stack(
                         children: [
                           ListTile(
                             contentPadding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 60.0),
@@ -166,7 +184,7 @@ class _AllproductPageState extends State<AllproductPage> {
                       ),
                     ),
 
-
+                    ),
                   ],
                 ),
               ),
@@ -191,26 +209,34 @@ class _AllproductPageState extends State<AllproductPage> {
                         controller: _controller,
                         children: [
                           Card(
-                            elevation: 4.0,
+                          elevation: 4.0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10.0),
                             ),
                             child: SizedBox(
                               width: 110.0,
-                              child: Column(
+                              child: isLoading
+                                  ? CardLoading(
+                                height: 100,
+                                borderRadius: BorderRadius.all(Radius.circular(10)),
+                                margin: EdgeInsets.only(bottom: 0),
+                              )
+
+                              : Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: const [
                                   Expanded(
                                     child: Image(
                                       image: AssetImage('assets/images/herbicide.png'),
                                       fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ],
+                                ),
                               ),
-                            ),
+                            ],
                           ),
-                          Card(
+                        ),
+                      ),
+
+                        Card(
                             elevation: 4.0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10.0),
