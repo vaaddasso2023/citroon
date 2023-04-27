@@ -1,4 +1,6 @@
+import 'dart:core';
 import 'dart:typed_data';
+import 'package:citroon/touslesproduits.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +25,7 @@ class _AddProductPageState extends State<AddProductPage> {
   TextEditingController _controllerProductName=TextEditingController();
   TextEditingController _controllerProductDescription=TextEditingController();
   TextEditingController _controllerProductPrice=TextEditingController();
+  TextEditingController _controllerImageFile=TextEditingController();
 
   CollectionReference _referenceIntrants = FirebaseFirestore.instance.collection('intrants');
   late Stream<QuerySnapshot> _streamIntrants;
@@ -318,49 +321,40 @@ final _formKey = GlobalKey<FormState>();
                               ),
                             ),
                           const SizedBox(height: 12,),
-                        FormField<String>(
-                          key: const Key('photo-form-field'),
-                          onSaved: (value) {
-                            _photoUrl = value;
-                            // Save the _photoUrl to Firestore
+                        GestureDetector(
+                          onTap: () async {
+                            final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+                            if (image != null) {
+                              final bytes = await image.readAsBytes();
+                              setState(() {
+                                imageFile = bytes;
+                                imageAvailable = true;
+                              });
+                              final Reference storageReference = FirebaseStorage.instance
+                                  .ref()
+                                  .child('product_images')
+                                  .child('${DateTime.now().millisecondsSinceEpoch}.jpg');
+                              final UploadTask uploadTask = storageReference.putData(bytes);
+                              await uploadTask.whenComplete(() async {
+                                final url = await storageReference.getDownloadURL();
+                                setState(() {
+                                  _photoUrl = url; // mettre à jour la variable _photoUrl avec le lien de l'image
+                                });
+                                // Call the onSave function to save the _photoUrl to Firestore
+                                // field.didChange(_photoUrl); // ne pas utiliser field.didChange() si vous n'affichez pas le lien dans le formulaire
+                              });
+                            }
                           },
-                          builder: (FormFieldState<String> field) {
-                            return GestureDetector(
-                              onTap: () async {
-                                final image = await ImagePicker().getImage(source: ImageSource.gallery);
-                                if (image != null) {
-                                  final bytes = await image.readAsBytes();
-                                  setState(() {
-                                    imageFile = bytes;
-                                    imageAvailable = true;
-                                  });
-                                  final Reference storageReference = FirebaseStorage.instance
-                                      .ref()
-                                      .child('product_images')
-                                      .child('${DateTime.now().millisecondsSinceEpoch}.jpg');
-                                  final UploadTask uploadTask = storageReference.putData(bytes);
-                                  await uploadTask.whenComplete(() async {
-                                    final url = await storageReference.getDownloadURL();
-                                    setState(() {
-                                      _photoUrl = url;
-                                    });
-                                    // Call the onSave function to save the _photoUrl to Firestore
-                                    field.didChange(_photoUrl);
-                                  });
-                                }
-                              },
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.grey),
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                                height: 40,
-                                child: const Center(
-                                  child: Text("Choisir la photo du produit"),
-                                ),
-                              ),
-                            );
-                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey),
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            height: 40,
+                            child: const Center(
+                              child: Text("Choisir la photo du produit"),
+                            ),
+                          ),
                         ),
                           const SizedBox(height: 12,),
                           // Précision sur la certification du produit
@@ -424,7 +418,8 @@ final _formKey = GlobalKey<FormState>();
                                         ),
                                       );
                                       // Add the data to the database
-                                    await FirebaseFirestore.instance.collection('intrants').add(dataTosave);
+                                    await FirebaseFirestore.instance.collection('intrants').add(dataTosave)
+                                    .catchError((error) => print('Erreur lors de l\'ajout de la donnée: $error'));
                                     await showDialog(
                                         context: context,
                                         builder: (BuildContext context) {
@@ -438,9 +433,12 @@ final _formKey = GlobalKey<FormState>();
                                                 child: Center(
                                                   child: Text('Fermer',
                                                     style: TextStyle(color: Colors.white),),
+
                                                 ),
                                                 onPressed: () {
-                                                  Navigator.of(context).pop();
+                                                  if (!context.mounted) return;
+                                                  Navigator.of(context).pushReplacement(
+                                                      MaterialPageRoute(builder: (context) => AllproductPage()));
                                                 },
                                                 style: ButtonStyle(
                                                   shape: MaterialStatePropertyAll<RoundedRectangleBorder>(
