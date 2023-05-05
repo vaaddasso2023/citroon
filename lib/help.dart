@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 
-class PesticidesPage extends StatefulWidget {
-  const PesticidesPage({Key? key}) : super(key: key);
+class HelpPage extends StatefulWidget {
+  const HelpPage({Key? key}) : super(key: key);
 
   @override
-  State<PesticidesPage> createState() => _PesticidesPageState();
+  State<HelpPage> createState() => _HelpPageState();
 }
 
-class _PesticidesPageState extends State<PesticidesPage> {
+class _HelpPageState extends State<HelpPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.green[600],
-        title: const Text('Pesticides'),
+        title: const Text('Aide'),
         elevation: 5,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),
@@ -26,7 +26,7 @@ class _PesticidesPageState extends State<PesticidesPage> {
       ),
       body: Container(
         child:  Center(
-          child: Text("Pesticides"),
+          child: Text("Help"),
         ),
       ),
     );

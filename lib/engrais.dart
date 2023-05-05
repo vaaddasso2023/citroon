@@ -1,12 +1,33 @@
 import 'package:flutter/material.dart';
 
-class FertilizerPage extends StatelessWidget {
+class FertilizerPage extends StatefulWidget {
+  const FertilizerPage({Key? key}) : super(key: key);
 
   @override
+  State<FertilizerPage> createState() => _FertilizerPageState();
+}
+
+class _FertilizerPageState extends State<FertilizerPage> {
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Center(
-        child: Text("Engrais"),
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.green[600],
+        title: const Text('Engrais'),
+        elevation: 5,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            // passing this to our root
+            Navigator.of(context).pop();
+          },
+        ),
+      ),
+      body: Container(
+        child:  Center(
+          child: Text("Engrais"),
+        ),
       ),
     );
   }

@@ -211,9 +211,20 @@ class _LoginPageState extends State<LoginPage> {
                                 onTap: () {
                                   Navigator.push(
                                       context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              RegistrationPage()));
+                                    PageRouteBuilder(
+                                      pageBuilder: (context, animation, secondaryAnimation) => RegistrationPage(),
+                                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                        return SlideTransition(
+                                          position: Tween<Offset>(
+                                            begin: const Offset(0, 0),
+                                            end: Offset.zero,
+                                          ).animate(animation),
+                                          child: child,
+                                        );
+                                      },
+                                    ),
+
+                                  );
                                 },
                                 child: Text(
                                   "S'enregistrer",
@@ -247,6 +258,11 @@ class _LoginPageState extends State<LoginPage> {
                   onPressed: () async {
                     bool isConnected = await checkInternetConnectivity();
                     if (isConnected){
+                      Center(
+                        child: CircularProgressIndicator(
+                          valueColor: new AlwaysStoppedAnimation<Color>(Colors.green),
+                        ),
+                      );
                    await signInWithGoogle(signInWithGoogle(context));
                     } else {
                       showDialog(

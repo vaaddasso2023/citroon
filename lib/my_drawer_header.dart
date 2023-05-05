@@ -24,7 +24,7 @@ class _MyHeaderDrawerState extends State<MyHeaderDrawer> {
     return Container(
       color: Colors.green[700],
       width: double.infinity,
-      height: 200,
+      height: 180,
       padding: const EdgeInsets.only(top:20.0),
       child:  Column(
             mainAxisAlignment: MainAxisAlignment.center,

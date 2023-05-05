@@ -17,17 +17,17 @@ class AddProductPage extends StatefulWidget {
 }
 
 class _AddProductPageState extends State<AddProductPage> {
+  bool isUploading = false;
   List<DropdownMenuItem<String>> listproduit=[];
+  final TextEditingController _controllerVendorName=TextEditingController();
+  final TextEditingController _controllerOrganizationName=TextEditingController();
+  final TextEditingController _controllerTelephone=TextEditingController();
+  final TextEditingController _controllerProductName=TextEditingController();
+  final TextEditingController _controllerProductDescription=TextEditingController();
+  final TextEditingController _controllerProductPrice=TextEditingController();
+  final TextEditingController _controllerImageFile=TextEditingController();
 
-  TextEditingController _controllerVendorName=TextEditingController();
-  TextEditingController _controllerOrganizationName=TextEditingController();
-  TextEditingController _controllerTelephone=TextEditingController();
-  TextEditingController _controllerProductName=TextEditingController();
-  TextEditingController _controllerProductDescription=TextEditingController();
-  TextEditingController _controllerProductPrice=TextEditingController();
-  TextEditingController _controllerImageFile=TextEditingController();
-
-  CollectionReference _referenceIntrants = FirebaseFirestore.instance.collection('intrants');
+  final CollectionReference _referenceIntrants = FirebaseFirestore.instance.collection('intrants');
   late Stream<QuerySnapshot> _streamIntrants;
 
   File? file;
@@ -41,7 +41,7 @@ class _AddProductPageState extends State<AddProductPage> {
         value: 'engrais',
           child: Text(
             'Engrais', style: TextStyle(
-              color: Colors.grey
+              color: Colors.black54
           ),
           ),),
   );
@@ -50,7 +50,7 @@ class _AddProductPageState extends State<AddProductPage> {
       value: 'semences',
       child: Text(
         'Semences', style: TextStyle(
-          color: Colors.grey
+          color: Colors.black54
       ),
       ),),
   );
@@ -59,7 +59,7 @@ class _AddProductPageState extends State<AddProductPage> {
       value: 'herbicides',
       child: Text(
         'Herbicides', style: TextStyle(
-          color: Colors.grey
+          color: Colors.black54
       ),
       ),),
   );
@@ -68,13 +68,29 @@ class _AddProductPageState extends State<AddProductPage> {
       value: 'pesticides',
       child: Text(
         'Pesticides', style: TextStyle(
-          color: Colors.grey
+          color: Colors.black54
+      ),
+      ),),
+  );
+  listproduit.add(
+    const DropdownMenuItem(
+      value: 'provende',
+      child: Text(
+        'Provende', style: TextStyle(
+          color: Colors.black54
+      ),
+      ),),
+  );
+  listproduit.add(
+    const DropdownMenuItem(
+      value: 'machine',
+      child: Text(
+        'Machines', style: TextStyle(
+          color: Colors.black54
       ),
       ),),
   );
 }
-
-
 
 final _formKey = GlobalKey<FormState>();
   bool imageAvailable = false;
@@ -98,6 +114,19 @@ final _formKey = GlobalKey<FormState>();
   Widget build(BuildContext context) {
     produits();
     return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.green[700],
+        title: const Text('Ajouter un intrant'),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            // passing this to our root
+            Navigator.of(context).pop();
+          },
+        ),
+      ),
         body: StreamBuilder<QuerySnapshot>(
             stream: _streamIntrants,
             builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -107,9 +136,9 @@ final _formKey = GlobalKey<FormState>();
                 );
               }
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(
+                return const Center(
                       child: CircularProgressIndicator(
-                        valueColor: new AlwaysStoppedAnimation<Color>(Colors.green),
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
                       ),
               );
             }
@@ -201,7 +230,7 @@ final _formKey = GlobalKey<FormState>();
                             keyboardType: TextInputType.text,
                             initialValue: _nomProduit,
                             decoration: const InputDecoration(
-                            labelText: 'Nom du produit',
+                            labelText: 'Nom de l\'intrant',
                             hintText: 'Le nom de votre produit',
                             border: OutlineInputBorder(),
                           ),
@@ -283,7 +312,7 @@ final _formKey = GlobalKey<FormState>();
                                   isExpanded: true,
                                   underline: const SizedBox(),
                                   hint: const Text(
-                                    'Type de produits', style: TextStyle(
+                                    'Type d\'intrants', style: TextStyle(
                                       color: Colors.grey
                                   ),
                                   ),
@@ -314,8 +343,8 @@ final _formKey = GlobalKey<FormState>();
 
                                ),
                               ),
-                              height: 120,
-                              width: 120,
+                              height: 80,
+                              width: 200,
                               child: imageAvailable ? Image.memory(
                                   imageFile) : const SizedBox(
                               ),
@@ -334,29 +363,65 @@ final _formKey = GlobalKey<FormState>();
                                   .ref()
                                   .child('product_images')
                                   .child('${DateTime.now().millisecondsSinceEpoch}.jpg');
-                              final UploadTask uploadTask = storageReference.putData(bytes);
-                              await uploadTask.whenComplete(() async {
-                                final url = await storageReference.getDownloadURL();
-                                setState(() {
-                                  _photoUrl = url; // mettre à jour la variable _photoUrl avec le lien de l'image
+                              // set a flag to indicate that the upload is in progress
+                              setState(() {
+                                isUploading = true;
+                              });
+                              try {
+                                final UploadTask uploadTask = storageReference.putData(bytes);
+                                await uploadTask.whenComplete(() async {
+                                  final url = await storageReference.getDownloadURL();
+                                  setState(() {
+                                    _photoUrl = url;
+                                  });
                                 });
-                                // Call the onSave function to save the _photoUrl to Firestore
-                                // field.didChange(_photoUrl); // ne pas utiliser field.didChange() si vous n'affichez pas le lien dans le formulaire
+                              } catch (e) {
+                                // handle error and show error message to user
+                                setState(() {
+                                  imageFile = Uint8List(0); // empty array of bytes
+                                  imageAvailable = false;
+                                  _photoUrl = null;
+                                });
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('Error uploading image'),
+                                    content: const Text('An error occurred while uploading the image.'),
+                                    actions: [
+                                      TextButton(
+                                        child: const Text('OK'),
+                                        onPressed: () => Navigator.pop(context),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                              setState(() {
+                                // reset the flag to indicate that the upload is complete
+                                isUploading = false;
                               });
                             }
                           },
                           child: Container(
+
                             decoration: BoxDecoration(
                               border: Border.all(color: Colors.grey),
                               borderRadius: BorderRadius.circular(5),
                             ),
                             height: 40,
-                            child: const Center(
-                              child: Text("Choisir la photo du produit"),
+                            child: Center(
+
+                              child: isUploading
+                                  ? const CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+                              )
+                                  : const Text("Choisir la photo du produit"),
                             ),
                           ),
                         ),
-                          const SizedBox(height: 12,),
+
+
+                        const SizedBox(height: 12,),
                           // Précision sur la certification du produit
                         FormField(
                           initialValue: '',
@@ -412,9 +477,9 @@ final _formKey = GlobalKey<FormState>();
                                         'photo' : _photoUrl,
                                       };
 
-                                      Center(
+                                      const Center(
                                         child: CircularProgressIndicator(
-                                          valueColor: new AlwaysStoppedAnimation<Color>(Colors.green),
+                                          valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
                                         ),
                                       );
                                       // Add the data to the database
@@ -427,18 +492,32 @@ final _formKey = GlobalKey<FormState>();
                                             shape: RoundedRectangleBorder(
                                               borderRadius: BorderRadius.circular(15.0),
                                             ),
-                                            content: Text('Félicitations ! Vos données sont envoyées. Elles seront validées avant affichage sur la plateforme.'),
+                                            content: const Text('Félicitations ! Vos données sont envoyées. Elles seront validées avant affichage sur la plateforme.'),
                                             actions: <Widget>[
                                               TextButton(
-                                                child: Center(
+                                                child: const Center(
                                                   child: Text('Fermer',
                                                     style: TextStyle(color: Colors.white),),
 
                                                 ),
                                                 onPressed: () {
                                                   if (!context.mounted) return;
-                                                  Navigator.of(context).pushReplacement(
-                                                      MaterialPageRoute(builder: (context) => AllproductPage()));
+                                                  Navigator.push(
+                                                    context,
+                                                    PageRouteBuilder(
+                                                      pageBuilder: (context, animation, secondaryAnimation) => const AllproductPage(),
+                                                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                                        return SlideTransition(
+                                                          position: Tween<Offset>(
+                                                            begin: const Offset(0, 0),
+                                                            end: Offset.zero,
+                                                          ).animate(animation),
+                                                          child: child,
+                                                        );
+                                                      },
+                                                    ),
+
+                                                  );
                                                 },
                                                 style: ButtonStyle(
                                                   shape: MaterialStatePropertyAll<RoundedRectangleBorder>(
