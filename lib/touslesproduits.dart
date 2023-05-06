@@ -31,6 +31,7 @@ class _AllproductPageState extends State<AllproductPage> {
         .map((e) => {'itemProductName': e['productname'],
         'itemProductDescription': e['description'],
         'itemProductPrice': e['price'],
+        'itemProductImage': e['photo'],
         })
         .toList();
     return listItems;
@@ -46,7 +47,7 @@ class _AllproductPageState extends State<AllproductPage> {
     return  Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.green[600],
+        backgroundColor:hexStringToColor("2f6241"),
         title: const Text('Tous les intrants'),
         elevation: 5,
         leading: IconButton(
@@ -56,6 +57,16 @@ class _AllproductPageState extends State<AllproductPage> {
             Navigator.of(context).pop();
           },
         ),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.search),
+            color: Colors.white,
+            padding: EdgeInsets.only(right: 25.0),
+            onPressed: () {
+              // do something when the search button is pressed
+            },
+          ),
+        ],
       ),
       body: Container(
         padding: const EdgeInsets.all(5.0),
@@ -91,13 +102,15 @@ class _AllproductPageState extends State<AllproductPage> {
                 'itemProductName' : e['productname'],
                 'itemProductDescription': e['description'],
                   'itemProductPrice': e['price'],
+                  'itemProductImage': e['photo'],
                 }).toList();
                 return ListView.builder(
                   itemCount: items.length,
                   itemBuilder: (BuildContext context, int index) {
                     Map thisItem = items[index];
                     return Card(
-                      elevation: 5.0,
+                      elevation: 3.0,
+                      margin: const EdgeInsets.all(10.0),
                       child: Stack(
                         children: [
                           ListTile(
@@ -105,7 +118,10 @@ class _AllproductPageState extends State<AllproductPage> {
                             title: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const FlutterLogo(size:48.0),
+                              Image.network(
+                                '${thisItem['itemProductImage']}',
+                                fit: BoxFit.cover,
+                              ),
                                 const SizedBox(height: 5),
                                 Text('${thisItem['itemProductName']}',
                                   style: const TextStyle(

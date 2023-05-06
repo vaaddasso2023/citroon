@@ -64,6 +64,7 @@ dependencies:
   firebase_storage: ^11.1.1
   weather: ^2.0.1
   shared_preferences: ^2.1.0
+  flutter_svg: ^2.0.5
 
 dev_dependencies:
   flutter_test:
@@ -98,6 +99,7 @@ flutter:
   - assets/images/engrais.png
   - assets/images/semence.png
   - assets/images/pesticide.png
+  - assets/images/logoappbar.png
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

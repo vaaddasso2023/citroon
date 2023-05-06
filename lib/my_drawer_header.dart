@@ -1,4 +1,5 @@
 import 'package:citroon/addproduct.dart';
+import 'package:citroon/utils/colors_utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -22,10 +23,10 @@ class _MyHeaderDrawerState extends State<MyHeaderDrawer> {
     final user = FirebaseAuth.instance.currentUser;
     final defaultAvatar = 'assets/images/profile.png';
     return Container(
-      color: Colors.green[700],
+      color: hexStringToColor("2f6241"),
       width: double.infinity,
-      height: 180,
-      padding: const EdgeInsets.only(top:20.0),
+      height: 200,
+      padding: const EdgeInsets.only(top:30.0),
       child:  Column(
             mainAxisAlignment: MainAxisAlignment.center,
            children: [

@@ -194,7 +194,7 @@ class _LoginPageState extends State<LoginPage> {
                             child: Image.asset(
                               "assets/images/logo.png",
                               fit: BoxFit.contain,
-                              width: 100,
+                              width: 130,
                             )),
                         SizedBox(height: 45),
                         emailField,

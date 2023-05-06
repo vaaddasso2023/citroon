@@ -1,5 +1,6 @@
 import 'package:citroon/addproduct.dart';
 import 'package:citroon/login.dart';
+import 'package:citroon/utils/colors_utils.dart';
 import 'package:citroon/utils/separator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -44,7 +45,7 @@ class _ParameterPageState extends State<ParameterPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.green[700],
+        backgroundColor: hexStringToColor("2f6241"),
         title: const Text('Paramètres'),
         elevation: 0,
         leading: IconButton(

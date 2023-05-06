@@ -1,3 +1,4 @@
+import 'package:citroon/utils/colors_utils.dart';
 import 'package:flutter/material.dart';
 
 class PesticidesPage extends StatefulWidget {
@@ -13,7 +14,7 @@ class _PesticidesPageState extends State<PesticidesPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.green[600],
+        backgroundColor: hexStringToColor("2f6241"),
         title: const Text('Pesticides'),
         elevation: 5,
         leading: IconButton(

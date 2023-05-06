@@ -14,6 +14,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:responsive_grid_list/responsive_grid_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:weather/weather.dart';
 import 'dart:async';
 import 'cgu.dart';
 import 'firebase_options.dart';
@@ -23,10 +24,12 @@ import 'my_drawer_header.dart';
 import 'utils/user_model.dart';
 
 
+
 Future main() async {
   await WidgetsFlutterBinding.ensureInitialized();
   SharedPreferences prefs = await SharedPreferences.getInstance();
   bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
 
  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp( MyApp(isLoggedIn: isLoggedIn));
@@ -34,6 +37,8 @@ Future main() async {
 class MyApp extends StatelessWidget {
   final bool? isLoggedIn;
   MyApp({this.isLoggedIn}) ;
+  Weather? instantWeatherData;
+
 
   @override
   Widget build(BuildContext context) {
@@ -105,75 +110,89 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     setState(() {
       isLoading = false;
+
     });
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.green[600],
-        title: const Text('CITROON'),
+        backgroundColor: hexStringToColor("2f6241"),
+        centerTitle: true,
+        title: const SizedBox(
+          height: 35.0,
+          child: Image(
+            image: AssetImage('assets/images/logoappbar.png'),
+          ),
+        ),
       ),
-      body: Container(
-        padding: const EdgeInsets.all(5.0),
-        decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [
+
+        body: Container(
+              padding: const EdgeInsets.all(5.0),
+              decoration: BoxDecoration(
+              gradient: LinearGradient(colors: [
               hexStringToColor("f9f9f9"),
               hexStringToColor("e3f4d7"),
               hexStringToColor("f9f9f9")
-            ], begin: Alignment.topCenter, end: Alignment.bottomCenter
-            )),
-        child: Column(
-          children: [
+              ], begin: Alignment.topCenter, end: Alignment.bottomCenter
+              )),
+          child: Column(
+            children: [
             Card(
-              elevation: 5.0,
-              child:
-              Container(
-                padding: const EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 15.0),
-                color: Colors.green,
-
-                child: SizedBox(
-                  width: double.maxFinite,
-                  child: isLoading
-                      ? const CardLoading(
-                    height: 100,
-                    borderRadius: BorderRadius.all(Radius.circular(10)),
-                    margin: EdgeInsets.only(bottom: 0),
-                  )
-                      : Stack(
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.fromLTRB(10.0, 10.0, 0.0, 10.0),
-                        child: Icon(Icons.cloudy_snowing,
-                          size: 30,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 10,
-                        left: 10,
-                        right: 0,
-                        top: 10,
-                        child: Center(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Text(
-                              'Nous allons mettre la Météo  ici',
-                              style: TextStyle(
-                                color: Colors.blueGrey,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
+            elevation: 3.0,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 15.0),
+                    color: hexStringToColor("2f6241"),
+                    child: isLoading
+                        ? const CardLoading(
+                      height: 100,
+                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                      margin: EdgeInsets.only(bottom: 0),
+                    )
+                        : Stack(
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.fromLTRB(10.0, 10.0, 0.0, 10.0),
+                          child: Icon(Icons.cloudy_snowing,
+                            size: 30,
+                            color: Colors.white,
                           ),
                         ),
-                      ),
-                    ],
+                        // Ajoutez ici le code pour afficher la météo instantanée
+
+                      ],
+                    ),
                   ),
                 ),
-              ),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 15.0),
+                    color: hexStringToColor("2f6241"),
+                    child: isLoading
+                        ? const CardLoading(
+                      height: 100,
+                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                      margin: EdgeInsets.only(bottom: 0),
+                    )
+                        : Stack(
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.fromLTRB(10.0, 10.0, 0.0, 10.0),
+                          child: Icon(Icons.cloudy_snowing,
+                            size: 30,
+                            color: Colors.white,
+                          ),
+                        ),
+                        // Ajoutez ici le code pour afficher la météo du jour suivant
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
+          ),
+
             const SizedBox(height: 15.0),
             Expanded(
               child: ResponsiveGridList (
@@ -201,7 +220,7 @@ class _HomePageState extends State<HomePage> {
                       );
                     },
                     child: Card(
-                      elevation: 5.0,
+                      elevation: 3.0,
                       child:
                       SizedBox(
                         width: 110.0,
@@ -268,7 +287,7 @@ class _HomePageState extends State<HomePage> {
                       );
                     },
                     child: Card(
-                      elevation: 5.0,
+                      elevation: 3.0,
                       child:
                       SizedBox(
                         width: 110.0,
@@ -335,7 +354,7 @@ class _HomePageState extends State<HomePage> {
                       );
                     },
                     child: Card(
-                      elevation: 5.0,
+                      elevation: 3.0,
                       child:
                       SizedBox(
                         width: 110.0,
@@ -402,7 +421,7 @@ class _HomePageState extends State<HomePage> {
                       );
                     },
                     child: Card(
-                      elevation: 5.0,
+                      elevation: 3.0,
                       child:
                       SizedBox(
                         width: 110.0,
@@ -469,7 +488,7 @@ class _HomePageState extends State<HomePage> {
                       );
                     },
                     child: Card(
-                      elevation: 5.0,
+                      elevation: 3.0,
                       child:
                       SizedBox(
                         width: 110.0,
@@ -536,7 +555,7 @@ class _HomePageState extends State<HomePage> {
                       );
                     },
                     child: Card(
-                      elevation: 5.0,
+                      elevation: 3.0,
                       child:
                       SizedBox(
                         width: 110.0,
@@ -603,7 +622,7 @@ class _HomePageState extends State<HomePage> {
                       );
                     },
                     child: Card(
-                      elevation: 5.0,
+                      elevation: 3.0,
                       child:
                       SizedBox(
                         width: 110.0,
@@ -670,7 +689,7 @@ class _HomePageState extends State<HomePage> {
                       );
                     },
                     child: Card(
-                      elevation: 5.0,
+                      elevation: 3.0,
                       child:
                       SizedBox(
                         width: 110.0,
@@ -737,7 +756,7 @@ class _HomePageState extends State<HomePage> {
                       );
                     },
                     child: Card(
-                      elevation: 5.0,
+                      elevation: 3.0,
                       child:
                       SizedBox(
                         width: 110.0,
@@ -795,7 +814,7 @@ class _HomePageState extends State<HomePage> {
                 width: double.maxFinite,
                 child: Center(
                   child: Text(
-                    'Prenez ici votre citroon, guérissez.',
+                    'On affichera plutôt nos partenaires ici.',
                     style: TextStyle(
                       color: Colors.black,
                       fontWeight: FontWeight.bold,
@@ -873,28 +892,29 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                         ),
-                        Card(
-                          elevation: 1.0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15.0),
-                          ),
-                          child: SizedBox(
-                            width: 110.0,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: const [
-                                Expanded(
+                          Card(
+                            elevation: 5.0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15.0),
+                            ),
+                            child: SizedBox(
+                              width: double.infinity, // prend toute la largeur disponible
+                              height: double.infinity,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(15.0),
+                                child: AspectRatio(
+                                  aspectRatio: 16/10, // ajustez le ratio en fonction de votre image
                                   child: Image(
                                     image: AssetImage('assets/images/engrais.png'),
-                                    fit: BoxFit.cover,
+                                    fit: BoxFit.fill,
                                   ),
                                 ),
-                              ],
+                              ),
                             ),
                           ),
-                        ),
 
-                        GestureDetector(
+
+                GestureDetector(
                           onTap: () {
                             Navigator.push(
                               context,
@@ -1062,8 +1082,8 @@ class _HomePageState extends State<HomePage> {
               Expanded(
                   child: Icon(
                 icon,
-                size: 30,
-                color: Colors.black45,
+                size: 35,
+                color: hexStringToColor("2f6241"),
                 ),
               ),
               Expanded(

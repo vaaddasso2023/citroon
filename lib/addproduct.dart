@@ -1,6 +1,7 @@
 import 'dart:core';
 import 'dart:typed_data';
 import 'package:citroon/touslesproduits.dart';
+import 'package:citroon/utils/colors_utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -25,7 +26,7 @@ class _AddProductPageState extends State<AddProductPage> {
   final TextEditingController _controllerProductName=TextEditingController();
   final TextEditingController _controllerProductDescription=TextEditingController();
   final TextEditingController _controllerProductPrice=TextEditingController();
-  final TextEditingController _controllerImageFile=TextEditingController();
+  //final TextEditingController _controllerImageFile=TextEditingController();
 
   final CollectionReference _referenceIntrants = FirebaseFirestore.instance.collection('intrants');
   late Stream<QuerySnapshot> _streamIntrants;
@@ -116,7 +117,7 @@ final _formKey = GlobalKey<FormState>();
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.green[700],
+        backgroundColor: hexStringToColor("2f6241"),
         title: const Text('Ajouter un intrant'),
         elevation: 0,
         leading: IconButton(
@@ -334,88 +335,130 @@ final _formKey = GlobalKey<FormState>();
                         const SizedBox(height: 12,),
                         // Type produit - fin
                         // Ajouter l'image du produit
-                        Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey),
-                            borderRadius: BorderRadius.circular(5),
-                           image: const DecorationImage(
-                           image: AssetImage("assets/images/icone_photo.png"),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.grey),
+                                    borderRadius: BorderRadius.circular(5),
+                                    image: imageAvailable && imageFile != null
+                                        ? DecorationImage(
+                                      image: MemoryImage(imageFile),
+                                      fit: BoxFit.cover,
+                                    )
+                                        : const DecorationImage(
+                                      image: AssetImage(""),
+                                    ),
+                                  ),
+                                  height: 80,
+                                  width: 250,
+                                  child: Stack(
+                                    children: [
+                                      !imageAvailable || imageFile == null
+                                          ? const Center(
+                                              child: Icon(Icons.photo, size: 40),
+                                            )
+                                          : const SizedBox(),
 
-                               ),
-                              ),
-                              height: 80,
-                              width: 200,
-                              child: imageAvailable ? Image.memory(
-                                  imageFile) : const SizedBox(
-                              ),
-                            ),
-                          const SizedBox(height: 12,),
-                        GestureDetector(
-                          onTap: () async {
-                            final image = await ImagePicker().pickImage(source: ImageSource.gallery);
-                            if (image != null) {
-                              final bytes = await image.readAsBytes();
-                              setState(() {
-                                imageFile = bytes;
-                                imageAvailable = true;
-                              });
-                              final Reference storageReference = FirebaseStorage.instance
-                                  .ref()
-                                  .child('product_images')
-                                  .child('${DateTime.now().millisecondsSinceEpoch}.jpg');
-                              // set a flag to indicate that the upload is in progress
-                              setState(() {
-                                isUploading = true;
-                              });
-                              try {
-                                final UploadTask uploadTask = storageReference.putData(bytes);
-                                await uploadTask.whenComplete(() async {
-                                  final url = await storageReference.getDownloadURL();
-                                  setState(() {
-                                    _photoUrl = url;
-                                  });
-                                });
-                              } catch (e) {
-                                // handle error and show error message to user
-                                setState(() {
-                                  imageFile = Uint8List(0); // empty array of bytes
-                                  imageAvailable = false;
-                                  _photoUrl = null;
-                                });
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                    title: const Text('Error uploading image'),
-                                    content: const Text('An error occurred while uploading the image.'),
-                                    actions: [
-                                      TextButton(
-                                        child: const Text('OK'),
-                                        onPressed: () => Navigator.pop(context),
-                                      ),
                                     ],
                                   ),
-                                );
-                              }
-                              setState(() {
-                                // reset the flag to indicate that the upload is complete
-                                isUploading = false;
-                              });
-                            }
-                          },
-                          child: Container(
-
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey),
-                              borderRadius: BorderRadius.circular(5),
+                                ),
+                              ],
                             ),
-                            height: 40,
-                            child: Center(
+                            Row(
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.delete_outline,
+                                    color: Colors.grey,
+                                      size: 40,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      !imageAvailable || imageFile == null;
+                                      imageAvailable = false;
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
 
-                              child: isUploading
-                                  ? const CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
-                              )
-                                  : const Text("Choisir la photo du produit"),
+
+                        const SizedBox(height: 12,),
+                        Form(
+
+                          child: GestureDetector(
+
+                            onTap: () async {
+                              final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+                              if (image != null) {
+                                final bytes = await image.readAsBytes();
+                                setState(() {
+                                  imageFile = bytes;
+                                  imageAvailable = true;
+                                });
+                                final Reference storageReference = FirebaseStorage.instance
+                                    .ref()
+                                    .child('product_images')
+                                    .child('${DateTime.now().millisecondsSinceEpoch}.jpg');
+                                // set a flag to indicate that the upload is in progress
+                                setState(() {
+                                  isUploading = true;
+                                });
+                                try {
+                                  final UploadTask uploadTask = storageReference.putData(bytes);
+                                  await uploadTask.whenComplete(() async {
+                                    final url = await storageReference.getDownloadURL();
+                                    setState(() {
+                                      _photoUrl = url;
+                                    });
+                                  });
+                                } catch (e) {
+                                  // handle error and show error message to user
+                                  setState(() {
+                                    imageFile = Uint8List(0); // empty array of bytes
+                                    imageAvailable = false;
+                                    _photoUrl = null;
+                                  });
+                                  /*showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text('Error uploading image'),
+                                      content: const Text('An error occurred while uploading the image.'),
+                                      actions: [
+                                        TextButton(
+                                          child: const Text('OK'),
+                                          onPressed: () => Navigator.pop(context),
+                                        ),
+                                      ],
+                                    ),
+                                  );*/
+                                }
+                                setState(() {
+                                  // reset the flag to indicate that the upload is complete
+                                  isUploading = false;
+                                });
+                              }
+                            },
+                            child: Container(
+
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey),
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              height: 40,
+                              child: Center(
+
+                                child: isUploading
+                                    ? const CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+                                )
+                                    : const Text("Choisir la photo du produit"),
+                              ),
                             ),
                           ),
                         ),
@@ -463,6 +506,7 @@ final _formKey = GlobalKey<FormState>();
                                       String itemProductName = _controllerProductName.text;
                                       String itemProductDescription = _controllerProductDescription.text;
                                       String itemProductPrice = _controllerProductPrice.text;
+
 
                                       // Map with the input data
                                       Map<String, dynamic> dataTosave={
