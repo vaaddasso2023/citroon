@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:card_loading/card_loading.dart';
 import 'package:citroon/engrais.dart';
 import 'package:citroon/herbicides.dart';
@@ -9,9 +11,12 @@ import 'package:citroon/semences.dart';
 import 'package:citroon/login.dart';
 import 'package:citroon/touslesproduits.dart';
 import 'package:citroon/utils/colors_utils.dart';
+import 'package:citroon/utils/meteo.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:responsive_grid_list/responsive_grid_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:weather/weather.dart';
@@ -24,21 +29,17 @@ import 'my_drawer_header.dart';
 import 'utils/user_model.dart';
 
 
-
 Future main() async {
   await WidgetsFlutterBinding.ensureInitialized();
   SharedPreferences prefs = await SharedPreferences.getInstance();
   bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-
-
- await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp( MyApp(isLoggedIn: isLoggedIn));
 }
+
 class MyApp extends StatelessWidget {
   final bool? isLoggedIn;
   MyApp({this.isLoggedIn}) ;
-  Weather? instantWeatherData;
-
 
   @override
   Widget build(BuildContext context) {
@@ -57,8 +58,8 @@ class HomePage extends StatefulWidget {
 
 }
 
-class _HomePageState extends State<HomePage> {
 
+class _HomePageState extends State<HomePage> {
   final PageController _controller = PageController(initialPage: 0);
   int _currentPage = 0;
   bool isConnected = false;
@@ -66,7 +67,6 @@ class _HomePageState extends State<HomePage> {
   var currentPage = DrawerSections.parameter;
   User? user = FirebaseAuth.instance.currentUser;
   UserModel loggedInUser = UserModel();
-
 
   @override
   void initState() {
@@ -84,6 +84,7 @@ class _HomePageState extends State<HomePage> {
       );
     });
   }
+
 
   void handleLogin() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -110,7 +111,6 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     setState(() {
       isLoading = false;
-
     });
 
     return Scaffold(
@@ -137,61 +137,53 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             children: [
             Card(
-            elevation: 3.0,
-            child: Row(
-              children: [
+                color: hexStringToColor("2f6241"),
+              elevation: 3.0,
+              child: Row(
+                children: [
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 15.0),
-                    color: hexStringToColor("2f6241"),
+                    padding: const EdgeInsets.all(23.0),
                     child: isLoading
-                        ? const CardLoading(
-                      height: 100,
-                      borderRadius: BorderRadius.all(Radius.circular(10)),
-                      margin: EdgeInsets.only(bottom: 0),
-                    )
-                        : Stack(
+                      ? const CardLoading(
+                        height: 100,
+                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                        margin: EdgeInsets.only(bottom: 0),
+                      )
+                  : Stack(
                       children: [
-                        const Padding(
-                          padding: EdgeInsets.fromLTRB(10.0, 10.0, 0.0, 10.0),
-                          child: Icon(Icons.cloudy_snowing,
-                            size: 30,
-                            color: Colors.white,
-                          ),
-                        ),
-                        // Ajoutez ici le code pour afficher la météo instantanée
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(10.0, 10.0, 0.0, 10.0),
+                    ),
+                    // Ajoutez ici le code pour afficher la météo du jour suivant
+                    ],
+                  ),
+                ),
 
-                      ],
-                    ),
-                  ),
                 ),
+
                 Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 15.0),
-                    color: hexStringToColor("2f6241"),
-                    child: isLoading
-                        ? const CardLoading(
-                      height: 100,
-                      borderRadius: BorderRadius.all(Radius.circular(10)),
-                      margin: EdgeInsets.only(bottom: 0),
-                    )
-                        : Stack(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.fromLTRB(10.0, 10.0, 0.0, 10.0),
-                          child: Icon(Icons.cloudy_snowing,
-                            size: 30,
-                            color: Colors.white,
-                          ),
-                        ),
-                        // Ajoutez ici le code pour afficher la météo du jour suivant
-                      ],
+                    child: Container(
+                      padding: const EdgeInsets.all(23.0),
+                      child: isLoading
+                          ? const CardLoading(
+                        height: 100,
+                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                        margin: EdgeInsets.only(bottom: 0),
+                      )
+                          : Stack(
+                             children: [
+                            const Padding(
+                              padding: EdgeInsets.fromLTRB(10.0, 10.0, 0.0, 10.0),
+                            ),
+                            // Ajoutez ici le code pour afficher la météo du jour suivant
+                        ],
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
-          ),
+            ),
 
             const SizedBox(height: 15.0),
             Expanded(
@@ -993,24 +985,36 @@ class _HomePageState extends State<HomePage> {
   }
   // ignore: non_constant_identifier_names
   Widget MyDrawerList(){
-    return Column(
-      //Show the list of menu drawer
-      children: [
-        const SizedBox(height: 25),
-        menuItem(1, "Paramètre", Icons.settings_suggest_outlined,
-          currentPage == DrawerSections.parameter ? true: false),
-        menuItem(2, "Aide", Icons.help_outline_outlined,
-            currentPage == DrawerSections.help ? true: false),
-        const SizedBox(height: 5), // espace de 5 pixels entre les deux paragraphes
-
+    return Container(
+      padding: EdgeInsets.all(15.0),
+      child: Column(
+        //Show the list of menu drawer
+        children: [
+          const SizedBox(height: 25),
+          menuItem(1, "Paramètre", Icons.settings_suggest_outlined,
+            currentPage == DrawerSections.parameter ? true: false),
+          menuItem(2, "Aide", Icons.help_outline_outlined,
+              currentPage == DrawerSections.help ? true: false),
+          const SizedBox(height: 5), // espace de 5 pixels entre les deux paragraphes
+          SizedBox(
+             child: menuItem(3, "C G U", Icons.report_outlined,
+                currentPage == DrawerSections.cgu ? true: false),
+          ),
         SizedBox(
-
-           child: menuItem(3, "C G U", Icons.report_outlined,
-              currentPage == DrawerSections.cgu ? true: false),
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: Expanded(
+              child: Container(
+                margin: const EdgeInsets.only(top: 250.0),
+                child: Image.asset('assets/images/logo.png', height: 40.0),
+              ),
+            ),
+          ),
         ), // espace de 5 pixels entre les deux paragraphes
-
-      ],
+        ],
+      ),
     );
+
   }
 
   Widget menuItem(int id, String title, IconData icon, bool selected, [String? page]){
@@ -1103,6 +1107,55 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
+class Weather {
+  final double temperature;
+  final String description;
+  final IconData iconData;
+
+  Weather({required this.temperature, required this.description, required this.iconData});
+
+  factory Weather.fromJson(Map<String, dynamic> json) {
+    final iconId = json['weather'][0]['id'];
+    final iconData = getWeatherIcon(iconId);
+
+    return Weather(
+      temperature: json['main']['temp'].toDouble(),
+      description: json['weather'][0]['description'],
+      iconData: iconData,
+    );
+  }
+}
+
+
 enum DrawerSections{
   parameter, help, cgu,
+}
+IconData getWeatherIcon(String weatherMain) {
+  switch (weatherMain) {
+    case 'Thunderstorm':
+      return Icons.flash_on;
+    case 'Drizzle':
+    case 'Rain':
+      return Icons.opacity;
+    case 'Snow':
+      return Icons.ac_unit;
+    case 'Mist':
+    case 'Smoke':
+    case 'Haze':
+    case 'Dust':
+    case 'Fog':
+    case 'Sand':
+    case 'Dust':
+    case 'Ash':
+    case 'Squall':
+    case 'Tornado':
+      return Icons.blur_on;
+    case 'Clear':
+      return Icons.wb_sunny;
+    case 'Clouds':
+      return Icons.cloud;
+    default:
+      return Icons.help_outline;
+  }
 }

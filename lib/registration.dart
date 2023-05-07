@@ -249,7 +249,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: hexStringToColor("2f6241"),
-        title: const Text('CITROON'),
+        title: const Text('Inscription'),
         elevation: 5,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),
@@ -282,7 +282,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                         child: Image.asset(
                           "assets/images/logo.png",
                           fit: BoxFit.contain,
-                          width: 100,
+                          width: 130,
                         )),
                     SizedBox(height: 55),
                     firstNameField,

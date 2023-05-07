@@ -3,18 +3,13 @@ import 'package:citroon/utils/colors_utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-
 import 'main.dart';
 
-
 class MyHeaderDrawer extends StatefulWidget {
-
-
   const MyHeaderDrawer({Key? key});
 
   @override
   State<MyHeaderDrawer> createState() => _MyHeaderDrawerState();
-
 }
 
 class _MyHeaderDrawerState extends State<MyHeaderDrawer> {
