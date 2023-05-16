@@ -9,6 +9,42 @@ class MachinePage extends StatefulWidget {
 }
 
 class _MachinePageState extends State<MachinePage> {
+  int _selectedIndex = 0;
+  Color _selectedIconColor =  hexStringToColor("2f6241");
+
+  final List<BottomNavigationBarItem> _bottomNavigationBarItems = [
+    const BottomNavigationBarItem(
+      icon: Icon(Icons.agriculture_outlined,),
+      label: 'Machinerie',
+    ),
+    const BottomNavigationBarItem(
+      icon: Icon(Icons.notifications_on_outlined),
+      label: 'Notification',
+    ),
+    const BottomNavigationBarItem(
+      icon: Icon(Icons.favorite_outline_outlined),
+      label: 'Favoris',
+    ),
+  ];
+
+  void _onBottomNavigationItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+      switch (index) {
+        case 0:
+          _selectedIconColor = hexStringToColor("2f6241");
+          break;
+        case 1:
+          _selectedIconColor = hexStringToColor("2f6241");
+          break;
+        case 2:
+          _selectedIconColor = hexStringToColor("2f6241");
+          break;
+        default:
+          _selectedIconColor = hexStringToColor("2f6241");
+      }
+    });
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,6 +65,14 @@ class _MachinePageState extends State<MachinePage> {
         child:  Center(
           child: Text("Machinerie"),
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        elevation: 10.0,
+        // backgroundColor: ,
+        currentIndex: _selectedIndex,
+        onTap: _onBottomNavigationItemTapped,
+        items: _bottomNavigationBarItems,
+        selectedItemColor: _selectedIconColor,
       ),
     );
   }

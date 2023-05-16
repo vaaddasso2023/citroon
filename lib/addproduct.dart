@@ -39,16 +39,17 @@ class _AddProductPageState extends State<AddProductPage> {
   listproduit.clear();
   listproduit.add(
       const DropdownMenuItem(
-        value: 'engrais',
+        value: 'Engrais',
           child: Text(
             'Engrais', style: TextStyle(
               color: Colors.black54
           ),
-          ),),
+          ),
+      ),
   );
   listproduit.add(
     const DropdownMenuItem(
-      value: 'semences',
+      value: 'Semence',
       child: Text(
         'Semences', style: TextStyle(
           color: Colors.black54
@@ -57,7 +58,7 @@ class _AddProductPageState extends State<AddProductPage> {
   );
   listproduit.add(
     const DropdownMenuItem(
-      value: 'herbicides',
+      value: 'Herbicide',
       child: Text(
         'Herbicides', style: TextStyle(
           color: Colors.black54
@@ -66,7 +67,7 @@ class _AddProductPageState extends State<AddProductPage> {
   );
   listproduit.add(
     const DropdownMenuItem(
-      value: 'pesticides',
+      value: 'Pesticide',
       child: Text(
         'Pesticides', style: TextStyle(
           color: Colors.black54
@@ -75,7 +76,7 @@ class _AddProductPageState extends State<AddProductPage> {
   );
   listproduit.add(
     const DropdownMenuItem(
-      value: 'provende',
+      value: 'Provende',
       child: Text(
         'Provende', style: TextStyle(
           color: Colors.black54
@@ -84,7 +85,7 @@ class _AddProductPageState extends State<AddProductPage> {
   );
   listproduit.add(
     const DropdownMenuItem(
-      value: 'machine',
+      value: 'Machine',
       child: Text(
         'Machines', style: TextStyle(
           color: Colors.black54
@@ -546,7 +547,7 @@ final _formKey = GlobalKey<FormState>();
                                                 ),
                                                 onPressed: () {
                                                   if (!context.mounted) return;
-                                                  Navigator.push(
+                                                  Navigator.pushReplacement(
                                                     context,
                                                     PageRouteBuilder(
                                                       pageBuilder: (context, animation, secondaryAnimation) => const AllproductPage(),

@@ -9,6 +9,43 @@ class HelpPage extends StatefulWidget {
 }
 
 class _HelpPageState extends State<HelpPage> {
+  int _selectedIndex = 0;
+  Color _selectedIconColor =  hexStringToColor("2f6241");
+
+  final List<BottomNavigationBarItem> _bottomNavigationBarItems = [
+    const BottomNavigationBarItem(
+      icon: Icon(Icons.help_outline_outlined,),
+      label: 'Aide',
+    ),
+    const BottomNavigationBarItem(
+      icon: Icon(Icons.notifications_on_outlined),
+      label: 'Notification',
+    ),
+    const BottomNavigationBarItem(
+      icon: Icon(Icons.contact_emergency_outlined),
+      label: 'Contact',
+    ),
+  ];
+
+  void _onBottomNavigationItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+      switch (index) {
+        case 0:
+          _selectedIconColor = hexStringToColor("2f6241");
+          break;
+        case 1:
+          _selectedIconColor = hexStringToColor("2f6241");
+          break;
+        case 2:
+          _selectedIconColor = hexStringToColor("2f6241");
+          break;
+        default:
+          _selectedIconColor = hexStringToColor("2f6241");
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,6 +66,14 @@ class _HelpPageState extends State<HelpPage> {
         child:  Center(
           child: Text("Help"),
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        elevation: 10.0,
+        // backgroundColor: ,
+        currentIndex: _selectedIndex,
+        onTap: _onBottomNavigationItemTapped,
+        items: _bottomNavigationBarItems,
+        selectedItemColor: _selectedIconColor,
       ),
     );
   }

@@ -1,26 +1,45 @@
 import 'dart:convert';
-
 import 'package:http/http.dart' as http;
 
-import '../utils/meteo.dart';
+class Weather {
+  final String locationName;
+  final String iconUrl;
+  final double temperature;
+  final String description;
 
+  Weather({
+    required this.locationName,
+    required this.iconUrl,
+    required this.temperature,
+    required this.description,
+  });
 
-class WeatherService {
-  Future<Weather> getWeatherData(String place) async {
-    try {
-      final queryParameters = {
-        'key': 'fa513f3a3836416f93e142221221108',
-        'q': place,
-      };
-      final uri = Uri.http('api.weatherapi.com', '/v1/current.json', queryParameters);
-      final response = await http.get(uri);
-      if(response.statusCode == 200) {
-        return Weather.fromJson(jsonDecode(response.body));
-      } else {
-        throw Exception("Can not get weather");
-      }
-    } catch(e) {
-      rethrow;
+  factory Weather.fromJson(Map<String, dynamic> json) {
+    final weather = json['weather'][0];
+    final main = json['main'];
+    final iconCode = weather['icon'];
+    final iconUrl = 'https://openweathermap.org/img/w/$iconCode.png';
+    final temperature = main['temp'].toDouble();
+    final description = weather['description'];
+    final locationName = json['name'];
+    return Weather(
+      locationName: locationName,
+      iconUrl: iconUrl,
+      temperature: temperature,
+      description: description,
+    );
+  }
+
+  static Future<Weather> fetch(
+      String apiKey, double latitude, double longitude) async {
+    final url =
+        'https://api.openweathermap.org/data/2.5/weather?lat=$latitude&lon=$longitude&appid=$apiKey&units=metric';
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      return Weather.fromJson(json);
+    } else {
+      throw Exception('Failed to load weather data');
     }
   }
 }

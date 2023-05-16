@@ -3,7 +3,6 @@ import 'package:card_loading/card_loading.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:responsive_grid_list/responsive_grid_list.dart';
-import 'semences.dart';
 import 'utils/colors_utils.dart';
 
 class AllproductPage extends StatefulWidget {
@@ -16,13 +15,51 @@ class AllproductPage extends StatefulWidget {
 class _AllproductPageState extends State<AllproductPage> {
   late Stream<QuerySnapshot> _stream;
   final _reference = FirebaseFirestore.instance.collection('intrants');
+  bool isFavorite = false;
   bool isLoading = true;
+  int _selectedIndex = 0;
+  Color _selectedIconColor =  hexStringToColor("2f6241");
+
+  final List<BottomNavigationBarItem> _bottomNavigationBarItems = [
+    const BottomNavigationBarItem(
+      icon: Icon(Icons.all_out_outlined,),
+      label: 'Tout',
+    ),
+    const BottomNavigationBarItem(
+      icon: Icon(Icons.notifications_on_outlined),
+      label: 'Notification',
+    ),
+    const BottomNavigationBarItem(
+      icon: Icon(Icons.favorite_outline_outlined),
+      label: 'Favoris',
+    ),
+  ];
+
+  void _onBottomNavigationItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+      switch (index) {
+        case 0:
+          _selectedIconColor = hexStringToColor("2f6241");
+          break;
+        case 1:
+          _selectedIconColor = hexStringToColor("2f6241");
+          break;
+        case 2:
+          _selectedIconColor = hexStringToColor("2f6241");
+          break;
+        default:
+          _selectedIconColor = hexStringToColor("2f6241");
+      }
+    });
+  }
 
 
   @override
   void initState() {
     super.initState();
     _stream = _reference.snapshots();
+    isLoading = true;
   }
 
   List<Map> parseData(QuerySnapshot querySnapshot) {
@@ -32,6 +69,7 @@ class _AllproductPageState extends State<AllproductPage> {
         'itemProductDescription': e['description'],
         'itemProductPrice': e['price'],
         'itemProductImage': e['photo'],
+       'itemProductType': e['producttype'],
         })
         .toList();
     return listItems;
@@ -39,7 +77,7 @@ class _AllproductPageState extends State<AllproductPage> {
 
   @override
   Widget build(BuildContext context) {
-    Future.delayed(const Duration(seconds: 2)).then((value) {
+    Future.delayed(const Duration(seconds: 3)).then((value) {
       setState(() {
         isLoading = false;
       });
@@ -59,9 +97,9 @@ class _AllproductPageState extends State<AllproductPage> {
         ),
         actions: <Widget>[
           IconButton(
-            icon: Icon(Icons.search),
+            icon: const Icon(Icons.search),
             color: Colors.white,
-            padding: EdgeInsets.only(right: 25.0),
+            padding: const EdgeInsets.only(right: 25.0),
             onPressed: () {
               // do something when the search button is pressed
             },
@@ -98,40 +136,60 @@ class _AllproductPageState extends State<AllproductPage> {
                 //Convert the documents to Maps
                 List<Map> items = documents.map((e) =>
                 {
-                'id': e.id,
-                'itemProductName' : e['productname'],
-                'itemProductDescription': e['description'],
-                  'itemProductPrice': e['price'],
-                  'itemProductImage': e['photo'],
+                    'id': e.id,
+                    'itemProductName' : e['productname'],
+                    'itemProductDescription': e['description'],
+                    'itemProductPrice': e['price'],
+                    'itemProductImage': e['photo'],
+                    'itemProductType': e['producttype'],
                 }).toList();
-                return ListView.builder(
-                  itemCount: items.length,
-                  itemBuilder: (BuildContext context, int index) {
+                return ResponsiveGridList(
+                  minItemWidth: 170,
+                  children: List.generate(items.length, (index) {
                     Map thisItem = items[index];
-                    return Card(
-                      elevation: 3.0,
-                      margin: const EdgeInsets.all(10.0),
-                      child: Stack(
-                        children: [
-                          ListTile(
-                            contentPadding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 60.0),
-                            title: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
+                    return Stack(
+                      children: [
+                        Card(
+                          elevation: 3.0,
+                          margin: const EdgeInsets.all(10.0),
+                          child: isLoading
+                              ? const CardLoading(height: 180)
+                              : Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
                               Image.network(
                                 '${thisItem['itemProductImage']}',
                                 fit: BoxFit.cover,
                               ),
-                                const SizedBox(height: 5),
-                                Text('${thisItem['itemProductName']}',
-                                  style: const TextStyle(
-                                    color: Colors.black54,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
+                              const SizedBox(height: 15),
+                              Row(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                                    child: Text(
+                                      '${thisItem['itemProductName']}',
+                                      style: const TextStyle(
+                                        color: Colors.black54,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 10),
-                                Text(
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 15),
+                                    child: const Icon(
+                                      Icons.verified,
+                                      color: Colors.green,
+                                      size: 18,
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              const SizedBox(height: 10),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                                child: Text(
                                   '${thisItem['itemProductDescription']}',
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: 2,
@@ -140,92 +198,133 @@ class _AllproductPageState extends State<AllproductPage> {
                                     fontSize: 13,
                                   ),
                                 ),
-                              ],
-                            ),
-
-                            trailing: InkWell(
-                              onTap: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return AlertDialog(
-                                      title: const Text('Télécharger la fiche technique ?',
-                                        style: TextStyle(
-                                          color: Colors.grey,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () => Navigator.pop(context),
-                                          child: const Text('Annuler'),
-                                        ),
-                                        TextButton(
-                                          onPressed: () {
-                                            // Télécharger le PDF ici
-                                            Navigator.pop(context);
+                              ),
+                              const SizedBox(height: 10),
+                              Expanded(
+                                child: Align(
+                                  alignment: Alignment.bottomLeft,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                       Container(
+                                         padding: EdgeInsets.only(left: 15.0),
+                                         child: InkWell(
+                                          onTap: () {
+                                            showDialog(
+                                              context: context,
+                                              builder: (context) {
+                                                return AlertDialog(
+                                                  title: const Text('Télécharger la fiche technique ?',
+                                                    style: TextStyle(
+                                                      color: Colors.grey,
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 14,
+                                                    ),
+                                                  ),
+                                                  actions: [
+                                                    TextButton(
+                                                      onPressed: () => Navigator.pop(context),
+                                                      child: const Text('Annuler'),
+                                                    ),
+                                                    TextButton(
+                                                      onPressed: () {
+                                                        // Télécharger le PDF ici
+                                                        Navigator.pop(context);
+                                                      },
+                                                      child: const Text('Télécharger'),
+                                                    ),
+                                                  ],
+                                                );
+                                              },
+                                            );
                                           },
-                                          child: const Text('Télécharger'),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                );
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(2),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: const [
-                                    Icon(Icons.cloud_download_outlined),
-                                    SizedBox(height: 5),
-                                    Text('Fiche',
-                                      style: TextStyle(
-                                        color: Colors.grey,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 10,
+                                          child: Container(
+                                            padding: const EdgeInsets.all(2),
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: const [
+                                                Icon(Icons.cloud_download_outlined),
+                                                SizedBox(height: 5),
+                                                Text('Fiche',
+                                                  style: TextStyle(
+                                                    color: Colors.grey,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 10,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
                                       ),
-                                    ),
-                                  ],
+                                       ),
+                                       Container(
+                                      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 25),
+                                      decoration: BoxDecoration(
+                                        color: hexStringToColor("2f6241"),
+                                        borderRadius: BorderRadius.circular(25),
+                                      ),
+                                      child: Text(
+                                        '${thisItem['itemProductType']}'.capitalize(),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                       ),
+                                    Container(
+                                        child: IconButton(
+                                          icon: Icon(
+                                            isFavorite ? Icons.favorite : Icons.favorite_border,
+                                            color: Colors.green,
+                                          ),
+                                          onPressed: () {
+                                            setState(() {
+                                              isFavorite = !isFavorite;
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 15),
+                                        child: const Icon(
+                                          Icons.shopping_cart_outlined,
+                                          color: Colors.green,
+                                          size: 18,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
+                            ],
                           ),
-                          Positioned(
-                            bottom: 10,
-                            right: 10,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.blue,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                '${thisItem['itemProductPrice']} FCFA',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const Positioned(
-                            bottom: 10,
-                            left: 10,
-                            child: Icon(
-                              Icons.verified,
-                              color: Colors.green,
-                              size: 18,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
+                        ),
 
-                  },
+                        Positioned(
+                          top: 35,
+                          right: 30,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              '${thisItem['itemProductPrice']} FCFA',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }),
                 );
+
                 }
                       return const Center(child: CircularProgressIndicator());
                   }
@@ -235,6 +334,22 @@ class _AllproductPageState extends State<AllproductPage> {
           ],
         ),
       ),
+      bottomNavigationBar: BottomNavigationBar(
+        elevation: 10.0,
+        // backgroundColor: ,
+        currentIndex: _selectedIndex,
+        onTap: _onBottomNavigationItemTapped,
+        items: _bottomNavigationBarItems,
+        selectedItemColor: _selectedIconColor,
+      ),
     );
+  }
+}
+extension StringExtension on String {
+  String capitalize() {
+    if (isEmpty) {
+      return this;
+    }
+    return '${this[0].toUpperCase()}${substring(1)}';
   }
 }

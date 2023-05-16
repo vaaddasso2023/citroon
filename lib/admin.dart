@@ -1,31 +1,29 @@
 import 'package:citroon/utils/colors_utils.dart';
 import 'package:flutter/material.dart';
 
-class HerbicidesPage extends StatefulWidget {
-  const HerbicidesPage({Key? key}) : super(key: key);
+class AdminPage extends StatefulWidget {
+  const AdminPage({Key? key}) : super(key: key);
 
   @override
-  State<HerbicidesPage> createState() => _HerbicidesPageState();
+  State<AdminPage> createState() => _AdminPageState();
 }
 
-class _HerbicidesPageState extends State<HerbicidesPage> {
-
-
+class _AdminPageState extends State<AdminPage> {
   int _selectedIndex = 0;
   Color _selectedIconColor =  hexStringToColor("2f6241");
 
   final List<BottomNavigationBarItem> _bottomNavigationBarItems = [
     const BottomNavigationBarItem(
-      icon: Icon(Icons.macro_off_outlined,),
-      label: 'Herbicides',
+      icon: Icon(Icons.admin_panel_settings_outlined,),
+      label: 'Admin',
     ),
     const BottomNavigationBarItem(
       icon: Icon(Icons.notifications_on_outlined),
       label: 'Notification',
     ),
     const BottomNavigationBarItem(
-      icon: Icon(Icons.favorite_outline_outlined),
-      label: 'Favoris',
+      icon: Icon(Icons.contact_emergency_outlined),
+      label: 'Contact',
     ),
   ];
 
@@ -51,22 +49,22 @@ class _HerbicidesPageState extends State<HerbicidesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+     // backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: hexStringToColor("2f6241"),
-        title: const Text('Herbicides'),
+      title: const Text('Admin'),
         elevation: 5,
-        leading: IconButton(
+       leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            // passing this to our root
-            Navigator.of(context).pop();
+         // Navigator.of(context).popUntil((route) => route.isFirst);
+           Navigator.of(context).pop();
           },
         ),
       ),
       body: Container(
-        child:  const Center(
-          child: Text("Herbicides"),
+        child:  Center(
+          child: Text("Admin"),
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(

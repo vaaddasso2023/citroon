@@ -1,5 +1,5 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'dart:math';
+
 import 'package:card_loading/card_loading.dart';
 import 'package:citroon/engrais.dart';
 import 'package:citroon/herbicides.dart';
@@ -11,15 +11,12 @@ import 'package:citroon/semences.dart';
 import 'package:citroon/login.dart';
 import 'package:citroon/touslesproduits.dart';
 import 'package:citroon/utils/colors_utils.dart';
-import 'package:citroon/utils/meteo.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:location/location.dart';
 import 'package:responsive_grid_list/responsive_grid_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:weather/weather.dart';
 import 'dart:async';
 import 'cgu.dart';
 import 'firebase_options.dart';
@@ -27,6 +24,8 @@ import 'help.dart';
 import 'machinerie.dart';
 import 'my_drawer_header.dart';
 import 'utils/user_model.dart';
+
+
 
 
 Future main() async {
@@ -61,16 +60,21 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final PageController _controller = PageController(initialPage: 0);
+  Location location = Location();
   int _currentPage = 0;
   bool isConnected = false;
   bool isLoading = true;
   var currentPage = DrawerSections.parameter;
   User? user = FirebaseAuth.instance.currentUser;
   UserModel loggedInUser = UserModel();
+  //String currentWeather = "";
+  //late LocationData _locationData;
+  //late Weather _weather;
 
   @override
   void initState() {
     super.initState();
+    //_getCurrentLocation();
     Timer.periodic(const Duration(seconds: 5), (Timer timer) {
       if (_currentPage < 2) {
         _currentPage++;
@@ -83,8 +87,27 @@ class _HomePageState extends State<HomePage> {
         curve: Curves.easeIn,
       );
     });
+
   }
 
+  /*void _getCurrentLocation() async {
+    Location location = Location();
+    LocationData locationData = await location.getLocation();
+    setState(() {
+     // _locationData = locationData;
+    });
+    _getWeather();
+  }*/
+
+  /*void _getWeather() async {
+    http.Response response = await http.get(Uri.parse(
+        'https://api.openweathermap.org/data/2.5/weather?lat=${_locationData.latitude}&lon=${_locationData.longitude}&appid=858bee59d9b261c3c98503c879ddb033'));
+    WeatherFactory wf = WeatherFactory("858bee59d9b261c3c98503c879ddb033", language: Language.DANISH);
+   // Weather weather = Weather.fromJson(jsonDecode(response.body));
+    setState(() {
+     // _weather = weather;
+    });
+  }*/
 
   void handleLogin() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -92,7 +115,7 @@ class _HomePageState extends State<HomePage> {
     Navigator.push(
       context,
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => HomePage(),
+        pageBuilder: (context, animation, secondaryAnimation) => const HomePage(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return SlideTransition(
             position: Tween<Offset>(
@@ -133,12 +156,16 @@ class _HomePageState extends State<HomePage> {
               hexStringToColor("e3f4d7"),
               hexStringToColor("f9f9f9")
               ], begin: Alignment.topCenter, end: Alignment.bottomCenter
-              )),
+            )
+          ),
           child: Column(
             children: [
             Card(
                 color: hexStringToColor("2f6241"),
               elevation: 3.0,
+              shape: RoundedRectangleBorder(
+                //borderRadius: BorderRadius.circular(30.0),
+              ),
               child: Row(
                 children: [
                 Expanded(
@@ -150,15 +177,28 @@ class _HomePageState extends State<HomePage> {
                         borderRadius: BorderRadius.all(Radius.circular(10)),
                         margin: EdgeInsets.only(bottom: 0),
                       )
-                  : Stack(
-                      children: [
-                    const Padding(
-                      padding: EdgeInsets.fromLTRB(10.0, 10.0, 0.0, 10.0),
+                    : Stack(
+                        children: [
+                        const Padding(
+                          padding: EdgeInsets.fromLTRB(10.0, 10.0, 0.0, 10.0),
+                        ),
+                       // Ajoutez ici le code pour afficher la météo du jour suivant
+                       // _weather != null
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const <Widget>[
+                            Text(
+                            'Météo à afficher',
+                            style: TextStyle(fontSize: 14,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
+                             ),
+                          ],
+                        )
+                          //  : CircularProgressIndicator(),
+                      ],
                     ),
-                    // Ajoutez ici le code pour afficher la météo du jour suivant
-                    ],
                   ),
-                ),
 
                 ),
 
@@ -172,8 +212,8 @@ class _HomePageState extends State<HomePage> {
                         margin: EdgeInsets.only(bottom: 0),
                       )
                           : Stack(
-                             children: [
-                            const Padding(
+                             children: const [
+                            Padding(
                               padding: EdgeInsets.fromLTRB(10.0, 10.0, 0.0, 10.0),
                             ),
                             // Ajoutez ici le code pour afficher la météo du jour suivant
@@ -213,6 +253,9 @@ class _HomePageState extends State<HomePage> {
                     },
                     child: Card(
                       elevation: 3.0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25.0),
+                      ),
                       child:
                       SizedBox(
                         width: 110.0,
@@ -224,31 +267,31 @@ class _HomePageState extends State<HomePage> {
                         )
                             : Stack(
                               children: [
-                            const Padding(
-                              padding: EdgeInsets.fromLTRB(10.0, 10.0, 0.0, 10.0),
-                              child: Icon(Icons.dashboard_outlined,
-                                size: 30,
-                                color: Colors.green,
+                              const Padding(
+                                padding: EdgeInsets.fromLTRB(10.0, 10.0, 0.0, 10.0),
+                                child: Icon(Icons.all_out_outlined,
+                                  size: 30,
+                                  color: Colors.green,
                               ),
-                            ),
-                            Positioned(
-                              bottom: 10,
-                              left: 10,
-                              right: 0,
-                              top: 10,
-                              child: Center(
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: const Text(
-                                    'Tout',
-                                    style: TextStyle(
-                                      color: Colors.blueGrey,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
+                             ),
+                              Positioned(
+                                bottom: 10,
+                                left: 10,
+                                right: 0,
+                                top: 10,
+                                child: Center(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: const Text(
+                                      'Tout',
+                                      style: TextStyle(
+                                        color: Colors.blueGrey,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
                                     ),
                                   ),
                                 ),
@@ -280,6 +323,9 @@ class _HomePageState extends State<HomePage> {
                     },
                     child: Card(
                       elevation: 3.0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25.0),
+                      ),
                       child:
                       SizedBox(
                         width: 110.0,
@@ -290,27 +336,27 @@ class _HomePageState extends State<HomePage> {
                           margin: EdgeInsets.only(bottom: 0),
                         )
                             : Stack(
-                          children: [
-                            const Padding(
-                              padding: EdgeInsets.fromLTRB(10.0, 10.0, 0.0, 10.0),
-                              child: Icon(Icons.macro_off_outlined,
-                                size: 30,
-                                color: Colors.black45,
+                                 children: [
+                              const Padding(
+                                padding: EdgeInsets.fromLTRB(10.0, 10.0, 0.0, 10.0),
+                                child: Icon(Icons.macro_off_outlined,
+                                  size: 30,
+                                  color: Colors.black45,
+                                ),
                               ),
-                            ),
-                            Positioned(
-                              bottom: 10,
-                              left: 10,
-                              right: 0,
-                              top: 10,
-                              child: Center(
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: const Text(
+                              Positioned(
+                                bottom: 10,
+                                left: 10,
+                                right: 0,
+                                top: 10,
+                                child: Center(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: const Text(
                                     'Herbicides',
                                     style: TextStyle(
                                       color: Colors.blueGrey,
@@ -347,6 +393,9 @@ class _HomePageState extends State<HomePage> {
                     },
                     child: Card(
                       elevation: 3.0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25.0),
+                      ),
                       child:
                       SizedBox(
                         width: 110.0,
@@ -414,6 +463,9 @@ class _HomePageState extends State<HomePage> {
                     },
                     child: Card(
                       elevation: 3.0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25.0),
+                      ),
                       child:
                       SizedBox(
                         width: 110.0,
@@ -481,6 +533,9 @@ class _HomePageState extends State<HomePage> {
                     },
                     child: Card(
                       elevation: 3.0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25.0),
+                      ),
                       child:
                       SizedBox(
                         width: 110.0,
@@ -548,6 +603,9 @@ class _HomePageState extends State<HomePage> {
                     },
                     child: Card(
                       elevation: 3.0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25.0),
+                      ),
                       child:
                       SizedBox(
                         width: 110.0,
@@ -615,6 +673,9 @@ class _HomePageState extends State<HomePage> {
                     },
                     child: Card(
                       elevation: 3.0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25.0),
+                      ),
                       child:
                       SizedBox(
                         width: 110.0,
@@ -625,32 +686,32 @@ class _HomePageState extends State<HomePage> {
                           margin: EdgeInsets.only(bottom: 0),
                         )
                             : Stack(
-                          children: [
-                            const Padding(
-                              padding: EdgeInsets.fromLTRB(10.0, 10.0, 0.0, 10.0),
-                              child: Icon(Icons.agriculture_outlined,
-                                size: 30,
-                                color: Colors.blue,
+                                 children: [
+                              const Padding(
+                                padding: EdgeInsets.fromLTRB(10.0, 10.0, 0.0, 10.0),
+                                child: Icon(Icons.agriculture_outlined,
+                                  size: 30,
+                                  color: Colors.blue,
+                                ),
                               ),
-                            ),
-                            Positioned(
-                              bottom: 10,
-                              left: 10,
-                              right: 0,
-                              top: 10,
-                              child: Center(
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: const Text(
-                                    'Machinerie',
-                                    style: TextStyle(
-                                      color: Colors.blueGrey,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
+                              Positioned(
+                                bottom: 10,
+                                left: 10,
+                                right: 0,
+                                top: 10,
+                                child: Center(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: const Text(
+                                      'Machinerie',
+                                      style: TextStyle(
+                                        color: Colors.blueGrey,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
                                     ),
                                   ),
                                 ),
@@ -682,6 +743,9 @@ class _HomePageState extends State<HomePage> {
                     },
                     child: Card(
                       elevation: 3.0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25.0),
+                      ),
                       child:
                       SizedBox(
                         width: 110.0,
@@ -692,32 +756,32 @@ class _HomePageState extends State<HomePage> {
                           margin: EdgeInsets.only(bottom: 0),
                         )
                             : Stack(
-                          children: [
-                            const Padding(
-                              padding: EdgeInsets.fromLTRB(10.0, 10.0, 0.0, 10.0),
-                              child: Icon(Icons.touch_app,
-                                size: 30,
-                                color: Colors.blue,
-                              ),
-                            ),
-                            Positioned(
-                              bottom: 10,
-                              left: 10,
-                              right: 0,
-                              top: 10,
-                              child: Center(
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(4),
+                                children: [
+                              const Padding(
+                                padding: EdgeInsets.fromLTRB(10.0, 10.0, 0.0, 10.0),
+                                child: Icon(Icons.business_outlined,
+                                    size: 30,
+                                    color: Colors.blue,
                                   ),
-                                  child: const Text(
-                                    'A propos',
-                                    style: TextStyle(
-                                      color: Colors.blueGrey,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
+                                ),
+                              Positioned(
+                                bottom: 10,
+                                left: 10,
+                                right: 0,
+                                top: 10,
+                                child: Center(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: const Text(
+                                      'A propos',
+                                      style: TextStyle(
+                                        color: Colors.blueGrey,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
                                     ),
                                   ),
                                 ),
@@ -749,6 +813,9 @@ class _HomePageState extends State<HomePage> {
                     },
                     child: Card(
                       elevation: 3.0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25.0),
+                      ),
                       child:
                       SizedBox(
                         width: 110.0,
@@ -759,7 +826,7 @@ class _HomePageState extends State<HomePage> {
                           margin: EdgeInsets.only(bottom: 0),
                         )
                             : Stack(
-                          children: [
+                               children: [
                             const Padding(
                               padding: EdgeInsets.fromLTRB(10.0, 10.0, 0.0, 10.0),
                               child: Icon(Icons.help_outline_outlined,
@@ -839,48 +906,42 @@ class _HomePageState extends State<HomePage> {
                       controller: _controller,
                       children: [
                         Card(
-                          elevation: 1.0,
+                          elevation: 5.0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15.0),
                           ),
                           child: SizedBox(
-                            width: 110.0,
-                            child: isLoading
-                                ? const CardLoading(
-                              height: 100,
-                              borderRadius: BorderRadius.all(Radius.circular(10)),
-                              margin: EdgeInsets.only(bottom: 0),
-                            )
-                                : Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: const [
-                                  Expanded(
-                                    child: Image(
-                                      image: AssetImage('assets/images/herbicide.png'),
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ],
+                            width: double.infinity,
+                            height: double.infinity,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(15.0),
+                              child: const AspectRatio(
+                                aspectRatio: 16/10,
+                                child: Image(
+                                  image: AssetImage('assets/images/herbicide.png'),
+                                  fit: BoxFit.fill,
+                                ),
                               ),
                             ),
                           ),
+                        ),
                         Card(
-                          elevation: 1.0,
+                          elevation: 5.0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15.0),
                           ),
                           child: SizedBox(
-                            width: 110.0,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: const [
-                                Expanded(
-                                  child: Image(
-                                    image: AssetImage('assets/images/pesticide.png'),
-                                    fit: BoxFit.cover,
-                                  ),
+                            width: double.infinity, // prend toute la largeur disponible
+                            height: double.infinity,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(15.0),
+                              child: const AspectRatio(
+                                aspectRatio: 16/10, // ajustez le ratio en fonction de votre image
+                                child: Image(
+                                  image: AssetImage('assets/images/pesticide.png'),
+                                  fit: BoxFit.fill,
                                 ),
-                              ],
+                              ),
                             ),
                           ),
                         ),
@@ -894,7 +955,7 @@ class _HomePageState extends State<HomePage> {
                               height: double.infinity,
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(15.0),
-                                child: AspectRatio(
+                                child: const AspectRatio(
                                   aspectRatio: 16/10, // ajustez le ratio en fonction de votre image
                                   child: Image(
                                     image: AssetImage('assets/images/engrais.png'),
@@ -926,22 +987,22 @@ class _HomePageState extends State<HomePage> {
                           },
 
                           child: Card(
-                            elevation: 1.0,
+                            elevation: 5.0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(15.0),
                             ),
                             child: SizedBox(
-                              width: 110.0,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
-                                  Expanded(
-                                    child: Image(
-                                      image: AssetImage('assets/images/semence.png'),
-                                      fit: BoxFit.cover,
-                                    ),
+                              width: double.infinity, // prend toute la largeur disponible
+                              height: double.infinity,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(15.0),
+                                child: const AspectRatio(
+                                  aspectRatio: 16/10, // ajustez le ratio en fonction de votre image
+                                  child: Image(
+                                    image: AssetImage('assets/images/semence.png'),
+                                    fit: BoxFit.fill,
                                   ),
-                                ],
+                                ),
                               ),
                             ),
                           ),
@@ -972,50 +1033,55 @@ class _HomePageState extends State<HomePage> {
       ),
 
       drawer: Drawer(
-        child: SingleChildScrollView(
-          child: Column(
-             children: [
-             const MyHeaderDrawer(),
-             MyDrawerList(),
-           ],
-            ),
-        ),
+        child: Column(
+           children: [
+           const MyHeaderDrawer(),
+           MyDrawerList(),
+         ],
+          ),
       ),
     );
   }
   // ignore: non_constant_identifier_names
-  Widget MyDrawerList(){
-    return Container(
-      padding: EdgeInsets.all(15.0),
-      child: Column(
-        //Show the list of menu drawer
-        children: [
-          const SizedBox(height: 25),
-          menuItem(1, "Paramètre", Icons.settings_suggest_outlined,
-            currentPage == DrawerSections.parameter ? true: false),
-          menuItem(2, "Aide", Icons.help_outline_outlined,
-              currentPage == DrawerSections.help ? true: false),
-          const SizedBox(height: 5), // espace de 5 pixels entre les deux paragraphes
-          SizedBox(
-             child: menuItem(3, "C G U", Icons.report_outlined,
-                currentPage == DrawerSections.cgu ? true: false),
-          ),
-        SizedBox(
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            child: Expanded(
-              child: Container(
-                margin: const EdgeInsets.only(top: 250.0),
-                child: Image.asset('assets/images/logo.png', height: 40.0),
-              ),
+  Widget MyDrawerList() {
+    return Stack(
+      children: [
+        Expanded(
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
+            child: Column(
+              children: [
+                const SizedBox(height: 25),
+                menuItem(1, "Paramètre", Icons.settings_suggest_outlined, currentPage == DrawerSections.parameter),
+                menuItem(2, "Aide", Icons.help_outline_outlined, currentPage == DrawerSections.help),
+                const SizedBox(height: 5),
+                menuItem(3, "C G U", Icons.report_outlined, currentPage == DrawerSections.cgu),
+              ],
             ),
           ),
-        ), // espace de 5 pixels entre les deux paragraphes
-        ],
-      ),
-    );
+        ),
+        Column(
 
+          children: [
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                padding: const EdgeInsets.only(top:400),
+                child: Flexible(
+                  fit: FlexFit.loose,
+                  child: Image.asset('assets/images/logo.png', height: 40.0),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
+
+
+
+
 
   Widget menuItem(int id, String title, IconData icon, bool selected, [String? page]){
     return Material(
@@ -1108,26 +1174,6 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class Weather {
-  final double temperature;
-  final String description;
-  final IconData iconData;
-
-  Weather({required this.temperature, required this.description, required this.iconData});
-
-  factory Weather.fromJson(Map<String, dynamic> json) {
-    final iconId = json['weather'][0]['id'];
-    final iconData = getWeatherIcon(iconId);
-
-    return Weather(
-      temperature: json['main']['temp'].toDouble(),
-      description: json['weather'][0]['description'],
-      iconData: iconData,
-    );
-  }
-}
-
-
 enum DrawerSections{
   parameter, help, cgu,
 }
@@ -1146,7 +1192,6 @@ IconData getWeatherIcon(String weatherMain) {
     case 'Dust':
     case 'Fog':
     case 'Sand':
-    case 'Dust':
     case 'Ash':
     case 'Squall':
     case 'Tornado':
@@ -1159,3 +1204,30 @@ IconData getWeatherIcon(String weatherMain) {
       return Icons.help_outline;
   }
 }
+
+/*class Weather {
+  late String areaName;
+ late  Temperature temperature;
+  late String weatherIcon;
+  late  String weatherDescription;
+  late int humidity;
+  late  double windSpeed;
+
+   Weather.fromJson(Map<String, dynamic> json) {
+    this.areaName = json['name'];
+    this.temperature = Temperature(json['main']['temp']);
+    this.weatherIcon = json['weather'][0]['icon'];
+    this.weatherDescription = json['weather'][0]['description'];
+    this.humidity = json['main']['humidity'];
+    this.windSpeed = json['wind']['speed'];
+  }
+}
+
+class Temperature {
+  double kelvin;
+
+  Temperature(this.kelvin);
+
+  double get celsius => kelvin - 273.15;
+}
+*/

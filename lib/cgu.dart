@@ -15,7 +15,7 @@ class _CguPageState extends State<CguPage> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: hexStringToColor("2f6241"),
-        title: const Text('CITROON'),
+        title: const Text('Conditions d\'utilisation'),
         elevation: 5,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),

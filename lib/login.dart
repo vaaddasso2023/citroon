@@ -1,8 +1,6 @@
 import 'package:citroon/touslesproduits.dart';
 import 'package:citroon/utils/separator.dart';
-import 'package:citroon/main.dart';
 import 'package:connectivity/connectivity.dart';
-import 'package:flutter/rendering.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -32,7 +30,6 @@ class _LoginPageState extends State<LoginPage> {
   // string for displaying the error Message
   String? errorMessage;
 
-
   @override
   Widget build(BuildContext context) {
     //email field
@@ -57,8 +54,8 @@ class _LoginPageState extends State<LoginPage> {
         },
         textInputAction: TextInputAction.next,
         decoration: InputDecoration(
-          prefixIcon: Icon(Icons.mail),
-          contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
+          prefixIcon: const Icon(Icons.mail),
+          contentPadding: const EdgeInsets.fromLTRB(20, 15, 20, 15),
           hintText: "Email",
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
@@ -84,8 +81,8 @@ class _LoginPageState extends State<LoginPage> {
         },
         textInputAction: TextInputAction.done,
         decoration: InputDecoration(
-          prefixIcon: Icon(Icons.vpn_key),
-          contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
+          prefixIcon: const Icon(Icons.vpn_key),
+          contentPadding: const EdgeInsets.fromLTRB(20, 15, 20, 15),
           hintText: "Mot de passe",
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
@@ -109,10 +106,10 @@ class _LoginPageState extends State<LoginPage> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15.0),
                     ),
-                    content: Text('Veuillez vous connecter à internet d\'abord !'),
+                    content: const Text('Veuillez vous connecter à internet d\'abord !'),
                     actions: <Widget>[
                       TextButton(
-                        child: Center(
+                        child: const Center(
                           child: Text('Fermer',
                             style: TextStyle(color: Colors.white),),
                         ),
@@ -158,7 +155,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
 
 
-          child: Text(
+          child: const Text(
             "Se connecter",
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -184,7 +181,7 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(height: 35), // Espacement entre les enfants
+                const SizedBox(height: 35),
                 Form(
                   key: _formKey,
                     child: Column(
@@ -196,23 +193,23 @@ class _LoginPageState extends State<LoginPage> {
                               fit: BoxFit.contain,
                               width: 130,
                             )),
-                        SizedBox(height: 45),
+                        const SizedBox(height: 45),
                         emailField,
-                        SizedBox(height: 25),
+                        const SizedBox(height: 25),
                         passwordField,
-                        SizedBox(height: 35),
+                        const SizedBox(height: 35),
                         loginButton,
-                        SizedBox(height: 15),
+                        const SizedBox(height: 15),
                         Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
-                              Text("Pas de compte ? "),
+                              const Text("Pas de compte ? "),
                               GestureDetector(
                                 onTap: () {
                                   Navigator.push(
                                       context,
                                     PageRouteBuilder(
-                                      pageBuilder: (context, animation, secondaryAnimation) => RegistrationPage(),
+                                      pageBuilder: (context, animation, secondaryAnimation) => const RegistrationPage(),
                                       transitionsBuilder: (context, animation, secondaryAnimation, child) {
                                         return SlideTransition(
                                           position: Tween<Offset>(
@@ -226,7 +223,7 @@ class _LoginPageState extends State<LoginPage> {
 
                                   );
                                 },
-                                child: Text(
+                                child: const Text(
                                   "S'enregistrer",
                                   style: TextStyle(
                                       color: Colors.redAccent,
@@ -239,7 +236,7 @@ class _LoginPageState extends State<LoginPage> {
                      ],
                    ),
                 ),
-                SizedBox(height: 30),
+                const SizedBox(height: 30),
 
                 // Séparateur
 
@@ -252,7 +249,7 @@ class _LoginPageState extends State<LoginPage> {
                       textColor: Colors.grey,
                     ),
                     ),
-                SizedBox(height: 30),
+                const SizedBox(height: 30),
                                           // Connexion avec GMAIL
                 ElevatedButton(
                   onPressed: () async {
@@ -272,10 +269,10 @@ class _LoginPageState extends State<LoginPage> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(15.0),
                             ),
-                            content: Text('Veuillez vous connecter à internet d\'abord !'),
+                            content: const Text('Veuillez vous connecter à internet d\'abord !'),
                             actions: <Widget>[
                               TextButton(
-                                child: Center(
+                                child: const Center(
                                   child: Text('Fermer',
                                     style: TextStyle(color: Colors.white),),
                                 ),
@@ -365,7 +362,7 @@ class _LoginPageState extends State<LoginPage> {
         await _auth.signInWithEmailAndPassword(email: email, password: password);
         Fluttertoast.showToast(msg: "Connecté avec succès !");
         Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => AllproductPage()));
+            MaterialPageRoute(builder: (context) => const AllproductPage()));
       } on FirebaseAuthException catch (error) {
         String errorMessage;
         switch (error.code) {

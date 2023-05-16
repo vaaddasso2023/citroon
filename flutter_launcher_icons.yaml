@@ -1,0 +1,10 @@
+dev_dependencies:
+  flutter_launcher_icons_maker: "^0.10.1"
+
+flutter_icons:
+  android: true
+  ios: true
+  macos: true
+  windows: true
+  web: true
+  image_path: "assets/images/icon.png"
