@@ -19,6 +19,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   // form key
   final _formKey = GlobalKey<FormState>();
+  bool isLoading = false;
 
 // editing controller
   final TextEditingController emailController = new TextEditingController();
@@ -93,75 +94,88 @@ class _LoginPageState extends State<LoginPage> {
       width: double.infinity,
       height: 50,
       child: ElevatedButton(
-          onPressed: () async {
-            bool isConnected = await checkInternetConnectivity();
-            if (isConnected){
-            signIn(emailController.text, passwordController.text);
+        onPressed: () async {
+          setState(() {
+            isLoading = true; // Mettre isLoading à true pour afficher l'indicateur de progression
+          });
 
-            } else {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15.0),
-                    ),
-                    content: const Text('Veuillez vous connecter à internet d\'abord !'),
-                    actions: <Widget>[
-                      TextButton(
-                        child: const Center(
-                          child: Text('Fermer',
-                            style: TextStyle(color: Colors.white),),
-                        ),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        style: ButtonStyle(
-                            shape: MaterialStatePropertyAll<RoundedRectangleBorder>(
-                                RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(15.0),
-                                )
-                            ),
-                            elevation: MaterialStateProperty.all<double>(1.0),
-                            backgroundColor: MaterialStateProperty.resolveWith((
-                                states) {
-                              if (states.contains(MaterialState.pressed)) {
-                                return Colors.green;
-                              }
-                              return Colors.green;
-                            })
+          bool isConnected = await checkInternetConnectivity();
+          if (isConnected) {
+             signIn(emailController.text, passwordController.text);
+          } else {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  content: const Text('Veuillez vous connecter à internet d\'abord !'),
+                  actions: <Widget>[
+                    TextButton(
+                      child: const Center(
+                        child: Text(
+                          'Fermer',
+                          style: TextStyle(color: Colors.white),
                         ),
                       ),
-                    ],
-                  );
-                },
-              );
-            }
-          },
-          style: ButtonStyle(
-              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30.0),
-                ),
-              ),
-              elevation: MaterialStateProperty.all<double>(5.0),
-              backgroundColor: MaterialStateProperty.resolveWith((
-                  states) {
-                if (states.contains(MaterialState.pressed)) {
-                  return Colors.grey;
-                }
-                return Colors.lightGreen;
-              })
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      style: ButtonStyle(
+                        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15.0),
+                          ),
+                        ),
+                        elevation: MaterialStateProperty.all<double>(1.0),
+                        backgroundColor: MaterialStateProperty.resolveWith((states) {
+                          if (states.contains(MaterialState.pressed)) {
+                            return Colors.green;
+                          }
+                          return Colors.green;
+                        }),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            );
+          }
+
+          setState(() {
+            isLoading = false; // Mettre isLoading à false pour cacher l'indicateur de progression
+          });
+        },
+        style: ButtonStyle(
+          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30.0),
+            ),
           ),
-
-
-          child: const Text(
-            "Se connecter",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-                fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
-          )
-
+          elevation: MaterialStateProperty.all<double>(5.0),
+          backgroundColor: MaterialStateProperty.resolveWith((states) {
+            if (states.contains(MaterialState.pressed)) {
+              return Colors.grey;
+            }
+            return Colors.lightGreen;
+          }),
+        ),
+        child: isLoading
+            ? Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+          ),
+        )
+            : const Text(
+          "Se connecter",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 20,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
     );
 
@@ -242,7 +256,7 @@ class _LoginPageState extends State<LoginPage> {
 
                 Center(
                     child: SeparatorLineWithText(
-                      text: 'Ou se connecter avec Google',
+                      text: 'Ou',
                       lineThickness: 1.0,
                       textSize: 14.0,
                       lineColor: Colors.grey,
@@ -253,15 +267,31 @@ class _LoginPageState extends State<LoginPage> {
                                           // Connexion avec GMAIL
                 ElevatedButton(
                   onPressed: () async {
+                    // Afficher l'indicateur de progression
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return Center(
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+                          ),
+                        );
+                      },
+                    );
+
+                    // Vérifier la connectivité Internet
                     bool isConnected = await checkInternetConnectivity();
-                    if (isConnected){
-                      Center(
-                        child: CircularProgressIndicator(
-                          valueColor: new AlwaysStoppedAnimation<Color>(Colors.green),
-                        ),
-                      );
-                   await signInWithGoogle(signInWithGoogle(context));
+                    if (isConnected) {
+                      // Se connecter avec Google
+                      await signInWithGoogle(signInWithGoogle(context));
+
+                      // Fermer la boîte de dialogue
+                      Navigator.pop(context);
                     } else {
+                      // Fermer la boîte de dialogue
+                      Navigator.pop(context);
+
+                      // Afficher la boîte de dialogue d'avertissement
                       showDialog(
                         context: context,
                         builder: (BuildContext context) {
@@ -273,26 +303,27 @@ class _LoginPageState extends State<LoginPage> {
                             actions: <Widget>[
                               TextButton(
                                 child: const Center(
-                                  child: Text('Fermer',
-                                    style: TextStyle(color: Colors.white),),
+                                  child: Text(
+                                    'Fermer',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
                                 ),
                                 onPressed: () {
                                   Navigator.of(context).pop();
                                 },
                                 style: ButtonStyle(
-                                    shape: MaterialStatePropertyAll<RoundedRectangleBorder>(
-                                        RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(15.0),
-                                        )
+                                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                                    RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15.0),
                                     ),
-                                    elevation: MaterialStateProperty.all<double>(1.0),
-                                    backgroundColor: MaterialStateProperty.resolveWith((
-                                        states) {
-                                      if (states.contains(MaterialState.pressed)) {
-                                        return Colors.green;
-                                      }
+                                  ),
+                                  elevation: MaterialStateProperty.all<double>(1.0),
+                                  backgroundColor: MaterialStateProperty.resolveWith((states) {
+                                    if (states.contains(MaterialState.pressed)) {
                                       return Colors.green;
-                                    })
+                                    }
+                                    return Colors.green;
+                                  }),
                                 ),
                               ),
                             ],
@@ -300,29 +331,21 @@ class _LoginPageState extends State<LoginPage> {
                         },
                       );
                     }
-                    Center(
-                      child: CircularProgressIndicator(
-                        valueColor: new AlwaysStoppedAnimation<Color>(Colors.green),
-                      ),
-                    );
                   },
-
                   style: ButtonStyle(
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30.0),
-                        ),
+                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.0),
                       ),
-                      elevation: MaterialStateProperty.all<double>(5.0),
-                      backgroundColor: MaterialStateProperty.resolveWith((
-                          states) {
-                        if (states.contains(MaterialState.pressed)) {
-                          return Colors.grey;
-                        }
-                        return Colors.lightGreen;
-                      })
+                    ),
+                    elevation: MaterialStateProperty.all<double>(5.0),
+                    backgroundColor: MaterialStateProperty.resolveWith((states) {
+                      if (states.contains(MaterialState.pressed)) {
+                        return Colors.grey;
+                      }
+                      return Colors.lightGreen;
+                    }),
                   ),
-
                   child: Padding(
                     padding: const EdgeInsets.all(10.0),
                     child: Row(
@@ -337,16 +360,19 @@ class _LoginPageState extends State<LoginPage> {
                           width: 10,
                         ),
                         const Text(
-                          "Se connecter",
+                          "Continuer avec Google",
                           style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white),
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                       ],
                     ),
                   ),
                 ),
+
+                //const Center(child: CircularProgressIndicator()),
               ],
             ),
           ),
@@ -361,8 +387,22 @@ class _LoginPageState extends State<LoginPage> {
       try {
         await _auth.signInWithEmailAndPassword(email: email, password: password);
         Fluttertoast.showToast(msg: "Connecté avec succès !");
-        Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const AllproductPage()));
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => const AllproductPage(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0, 0),
+                  end: Offset.zero,
+                ).animate(animation),
+                child: child,
+              );
+            },
+          ),
+
+        );
       } on FirebaseAuthException catch (error) {
         String errorMessage;
         switch (error.code) {
@@ -390,7 +430,7 @@ class _LoginPageState extends State<LoginPage> {
         }
         Fluttertoast.showToast(
             msg: errorMessage,
-            gravity: ToastGravity.CENTER,
+            gravity: ToastGravity.TOP,
             backgroundColor: Colors.green,
         );
         print(error.code);

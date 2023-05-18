@@ -1,4 +1,3 @@
-import 'package:citroon/addproduct.dart';
 import 'package:citroon/admin.dart';
 import 'package:citroon/login.dart';
 import 'package:citroon/utils/colors_utils.dart';
@@ -166,30 +165,6 @@ class _ParameterPageState extends State<ParameterPage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.push(
-            context,
-            PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) => const AddProductPage(),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                return SlideTransition(
-                  position: Tween<Offset>(
-                    begin: const Offset(0, 0),
-                    end: Offset.zero,
-                  ).animate(animation),
-                  child: child,
-                );
-              },
-            ),
-          );
-        },
-        label: const Text(''),
-        icon: const Icon(Icons.add),
-
-        backgroundColor: Colors.lightGreen,
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
 
       bottomNavigationBar: BottomNavigationBar(
         elevation: 10.0,

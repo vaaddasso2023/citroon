@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:citroon/login.dart';
 import 'package:citroon/utils/colors_utils.dart';
 import 'package:citroon/utils/user_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -5,8 +7,6 @@ import 'package:connectivity/connectivity.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-
-import 'main.dart';
 
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({Key? key}) : super(key: key);
@@ -17,7 +17,8 @@ class RegistrationPage extends StatefulWidget {
 
 class _RegistrationPageState extends State<RegistrationPage> {
   final _auth = FirebaseAuth.instance;
-
+  bool isLoading = false;
+  bool showProgress = true;
   // string for displaying the error Message
   String? errorMessage;
 
@@ -30,6 +31,18 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final emailEditingController = new TextEditingController();
   final passwordEditingController = new TextEditingController();
   final confirmPasswordEditingController = new TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Définir un délai de 3 secondes avant de masquer l'indicateur de progression
+    Timer(const Duration(seconds: 3), () {
+      setState(() {
+        showProgress = false;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,8 +66,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
         },
         textInputAction: TextInputAction.next,
         decoration: InputDecoration(
-          prefixIcon: Icon(Icons.account_circle),
-          contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
+          prefixIcon: const Icon(Icons.account_circle),
+          contentPadding: const EdgeInsets.fromLTRB(20, 15, 20, 15),
           hintText: "Prénom",
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
@@ -77,8 +90,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
         },
         textInputAction: TextInputAction.next,
         decoration: InputDecoration(
-          prefixIcon: Icon(Icons.account_circle),
-          contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
+          prefixIcon: const Icon(Icons.account_circle),
+          contentPadding: const EdgeInsets.fromLTRB(20, 15, 20, 15),
           hintText: "Nom",
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
@@ -106,8 +119,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
         },
         textInputAction: TextInputAction.next,
         decoration: InputDecoration(
-          prefixIcon: Icon(Icons.mail),
-          contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
+          prefixIcon: const Icon(Icons.mail),
+          contentPadding: const EdgeInsets.fromLTRB(20, 15, 20, 15),
           hintText: "Email",
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
@@ -125,7 +138,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
             return ("Mot de passe obligatoire");
           }
           if (!regex.hasMatch(value)) {
-            return ("Entrer un mot de passe valide(Min. 6 Character)");
+            return ("Entrer un mot de passe valide (Min. 6 Character)");
           }
         },
         onSaved: (value) {
@@ -133,8 +146,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
         },
         textInputAction: TextInputAction.next,
         decoration: InputDecoration(
-          prefixIcon: Icon(Icons.vpn_key),
-          contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
+          prefixIcon: const Icon(Icons.vpn_key),
+          contentPadding: const EdgeInsets.fromLTRB(20, 15, 20, 15),
           hintText: "Mot de passe",
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
@@ -158,8 +171,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
         },
         textInputAction: TextInputAction.done,
         decoration: InputDecoration(
-          prefixIcon: Icon(Icons.vpn_key),
-          contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
+          prefixIcon: const Icon(Icons.vpn_key),
+          contentPadding: const EdgeInsets.fromLTRB(20, 15, 20, 15),
           hintText: "Mot de passe",
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
@@ -173,76 +186,89 @@ class _RegistrationPageState extends State<RegistrationPage> {
       width: double.infinity,
       height: 50,
       child: ElevatedButton(
-          onPressed: () async {
-            bool isConnected = await checkInternetConnectivity();
-            if (isConnected) {
+        onPressed: () async {
+          setState(() {
+            isLoading = true; // Mettre isLoading à true pour afficher l'indicateur de progression
+          });
+
+          bool isConnected = await checkInternetConnectivity();
+          if (isConnected) {
             signUp(emailEditingController.text, passwordEditingController.text);
-            } else {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15.0),
-                    ),
-                    content: Text('Veuillez vous connecter à internet d\'abord !'),
-                    actions: <Widget>[
-                      TextButton(
-                        child: Center(
-                          child: Text('Fermer',
-                            style: TextStyle(color: Colors.white),),
-                        ),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        style: ButtonStyle(
-                            shape: MaterialStatePropertyAll<RoundedRectangleBorder>(
-                                RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(15.0),
-                                )
-                            ),
-                            elevation: MaterialStateProperty.all<double>(1.0),
-                            backgroundColor: MaterialStateProperty.resolveWith((
-                                states) {
-                              if (states.contains(MaterialState.pressed)) {
-                                return Colors.green;
-                              }
-                              return Colors.green;
-                            })
+          } else {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  content: const Text('Veuillez vous connecter à internet d\'abord !'),
+                  actions: <Widget>[
+                    TextButton(
+                      child: const Center(
+                        child: Text(
+                          'Fermer',
+                          style: TextStyle(color: Colors.white),
                         ),
                       ),
-                    ],
-                  );
-                },
-              );
-            }
-            Center(
-              child: CircularProgressIndicator(
-                valueColor: new AlwaysStoppedAnimation<Color>(Colors.green),
-              ),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      style: ButtonStyle(
+                        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15.0),
+                          ),
+                        ),
+                        elevation: MaterialStateProperty.all<double>(1.0),
+                        backgroundColor: MaterialStateProperty.resolveWith((states) {
+                          if (states.contains(MaterialState.pressed)) {
+                            return Colors.green;
+                          }
+                          return Colors.green;
+                        }),
+                      ),
+                    ),
+                  ],
+                );
+              },
             );
-          },
-          style: ButtonStyle(
-              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30.0),
-                ),
-              ),
-              elevation: MaterialStateProperty.all<double>(5.0),
-              backgroundColor: MaterialStateProperty.resolveWith((
-                  states) {
-                if (states.contains(MaterialState.pressed)) {
-                  return Colors.grey;
-                }
-                return Colors.lightGreen;
-              })
+          }
+
+          setState(() {
+            isLoading = false; // Mettre isLoading à false pour cacher l'indicateur de progression
+          });
+        },
+        style: ButtonStyle(
+          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30.0),
+            ),
           ),
-          child: Text(
-            "S'enregistrer",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-                fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
-          )),
+          elevation: MaterialStateProperty.all<double>(5.0),
+          backgroundColor: MaterialStateProperty.resolveWith((states) {
+            if (states.contains(MaterialState.pressed)) {
+              return Colors.grey;
+            }
+            return Colors.lightGreen;
+          }),
+        ),
+        child: isLoading
+            ? const Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+          ),
+        )
+            : const Text(
+          "S'enregistrer",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 20,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
     );
 
     return Scaffold(
@@ -252,7 +278,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
         title: const Text('Inscription'),
         elevation: 5,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
             // passing this to our root
             Navigator.of(context).pop();
@@ -284,19 +310,19 @@ class _RegistrationPageState extends State<RegistrationPage> {
                           fit: BoxFit.contain,
                           width: 130,
                         )),
-                    SizedBox(height: 55),
+                    const SizedBox(height: 55),
                     firstNameField,
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     secondNameField,
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     emailField,
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     passwordField,
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     confirmPasswordField,
-                    SizedBox(height: 25),
+                    const SizedBox(height: 60),
                     signUpButton,
-                    SizedBox(height: 30),
+                    const SizedBox(height: 30),
                   ],
                 ),
               ),
@@ -347,9 +373,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
     }
   }
   postDetailsToFirestore() async {
-    // calling our firestore
-    // calling our user model
-    // sedning these values
 
     FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
     User? user = _auth.currentUser;
@@ -367,24 +390,40 @@ class _RegistrationPageState extends State<RegistrationPage> {
         .doc(user.uid)
         .set(userModel.toMap());
     Center(
-      child: CircularProgressIndicator(
-        valueColor: new AlwaysStoppedAnimation<Color>(Colors.green),
-      ),
+      child:showProgress
+          ? const CircularProgressIndicator(
+        valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+      )
+          : Container(),
     );
+
+
 
     Fluttertoast.showToast(msg: "Le compte a été créé avec succès :) ",
         toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.CENTER,
+        gravity: ToastGravity.TOP,
         timeInSecForIosWeb: 1,
         backgroundColor: Colors.green,
         textColor: Colors.white,
         fontSize: 16.0
     );
 
-    Navigator.pushAndRemoveUntil(
-        (context),
-        MaterialPageRoute(builder: (context) => HomePage()),
-            (route) => false);
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => const LoginPage(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 0),
+              end: Offset.zero,
+            ).animate(animation),
+            child: child,
+          );
+        },
+      ),
+
+    );
   }
 
   Future<bool> checkInternetConnectivity() async {

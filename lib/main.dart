@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:card_loading/card_loading.dart';
 import 'package:citroon/engrais.dart';
 import 'package:citroon/herbicides.dart';
@@ -14,7 +12,6 @@ import 'package:citroon/utils/colors_utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:location/location.dart';
 import 'package:responsive_grid_list/responsive_grid_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
@@ -60,21 +57,17 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final PageController _controller = PageController(initialPage: 0);
-  Location location = Location();
   int _currentPage = 0;
   bool isConnected = false;
   bool isLoading = true;
   var currentPage = DrawerSections.parameter;
   User? user = FirebaseAuth.instance.currentUser;
   UserModel loggedInUser = UserModel();
-  //String currentWeather = "";
-  //late LocationData _locationData;
-  //late Weather _weather;
+
 
   @override
   void initState() {
     super.initState();
-    //_getCurrentLocation();
     Timer.periodic(const Duration(seconds: 5), (Timer timer) {
       if (_currentPage < 2) {
         _currentPage++;
@@ -90,24 +83,6 @@ class _HomePageState extends State<HomePage> {
 
   }
 
-  /*void _getCurrentLocation() async {
-    Location location = Location();
-    LocationData locationData = await location.getLocation();
-    setState(() {
-     // _locationData = locationData;
-    });
-    _getWeather();
-  }*/
-
-  /*void _getWeather() async {
-    http.Response response = await http.get(Uri.parse(
-        'https://api.openweathermap.org/data/2.5/weather?lat=${_locationData.latitude}&lon=${_locationData.longitude}&appid=858bee59d9b261c3c98503c879ddb033'));
-    WeatherFactory wf = WeatherFactory("858bee59d9b261c3c98503c879ddb033", language: Language.DANISH);
-   // Weather weather = Weather.fromJson(jsonDecode(response.body));
-    setState(() {
-     // _weather = weather;
-    });
-  }*/
 
   void handleLogin() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -228,9 +203,9 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 15.0),
             Expanded(
               child: ResponsiveGridList (
-                minItemWidth: 165,
-                horizontalGridMargin: 1,
-                verticalGridMargin: 1,
+                minItemWidth: 120,
+                horizontalGridMargin: 0,
+                verticalGridMargin: 0,
                 children: [
                   // Tous intants
                   InkWell(
@@ -1044,48 +1019,27 @@ class _HomePageState extends State<HomePage> {
   }
   // ignore: non_constant_identifier_names
   Widget MyDrawerList() {
-    return Stack(
-      children: [
-        Expanded(
-          child: Container(
-            padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
-            child: Column(
-              children: [
-                const SizedBox(height: 25),
-                menuItem(1, "Paramètre", Icons.settings_suggest_outlined, currentPage == DrawerSections.parameter),
-                menuItem(2, "Aide", Icons.help_outline_outlined, currentPage == DrawerSections.help),
-                const SizedBox(height: 5),
-                menuItem(3, "C G U", Icons.report_outlined, currentPage == DrawerSections.cgu),
-              ],
-            ),
-          ),
-        ),
-        Column(
-
-          children: [
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                padding: const EdgeInsets.only(top:400),
-                child: Flexible(
-                  fit: FlexFit.loose,
-                  child: Image.asset('assets/images/logo.png', height: 40.0),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
+      child: Column(
+        children: [
+          const SizedBox(height: 25),
+          menuItem(1, "Paramètre", Icons.settings_suggest_outlined, currentPage == DrawerSections.parameter),
+          menuItem(2, "Aide", Icons.help_outline_outlined, currentPage == DrawerSections.help),
+          const SizedBox(height: 5),
+          menuItem(3, "C G U", Icons.report_outlined, currentPage == DrawerSections.cgu),
+          const SizedBox(height: 250),
+          SizedBox(
+            child: Image.asset('assets/images/logo.png', height: 40.0),
+          )
+        ],
+      ),
     );
   }
 
-
-
-
-
   Widget menuItem(int id, String title, IconData icon, bool selected, [String? page]){
     return Material(
-      color: selected ? Colors.grey[300] : Colors.transparent,
+      // color: selected ? Colors.white : Colors.transparent,
       child: InkWell(
         onTap: (){
           Navigator.pop(context);
@@ -1177,7 +1131,7 @@ class _HomePageState extends State<HomePage> {
 enum DrawerSections{
   parameter, help, cgu,
 }
-IconData getWeatherIcon(String weatherMain) {
+/*IconData getWeatherIcon(String weatherMain) {
   switch (weatherMain) {
     case 'Thunderstorm':
       return Icons.flash_on;
@@ -1203,31 +1157,5 @@ IconData getWeatherIcon(String weatherMain) {
     default:
       return Icons.help_outline;
   }
-}
+}*/
 
-/*class Weather {
-  late String areaName;
- late  Temperature temperature;
-  late String weatherIcon;
-  late  String weatherDescription;
-  late int humidity;
-  late  double windSpeed;
-
-   Weather.fromJson(Map<String, dynamic> json) {
-    this.areaName = json['name'];
-    this.temperature = Temperature(json['main']['temp']);
-    this.weatherIcon = json['weather'][0]['icon'];
-    this.weatherDescription = json['weather'][0]['description'];
-    this.humidity = json['main']['humidity'];
-    this.windSpeed = json['wind']['speed'];
-  }
-}
-
-class Temperature {
-  double kelvin;
-
-  Temperature(this.kelvin);
-
-  double get celsius => kelvin - 273.15;
-}
-*/

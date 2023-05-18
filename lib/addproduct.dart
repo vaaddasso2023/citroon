@@ -1,14 +1,13 @@
 import 'dart:core';
 import 'dart:typed_data';
-import 'package:citroon/touslesproduits.dart';
 import 'package:citroon/utils/colors_utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-import 'login.dart';
+import 'admin.dart';
 
 class AddProductPage extends StatefulWidget {
   const AddProductPage({Key? key}) : super(key: key);
@@ -26,7 +25,6 @@ class _AddProductPageState extends State<AddProductPage> {
   final TextEditingController _controllerProductName=TextEditingController();
   final TextEditingController _controllerProductDescription=TextEditingController();
   final TextEditingController _controllerProductPrice=TextEditingController();
-  //final TextEditingController _controllerImageFile=TextEditingController();
 
   final CollectionReference _referenceIntrants = FirebaseFirestore.instance.collection('intrants');
   late Stream<QuerySnapshot> _streamIntrants;
@@ -39,7 +37,7 @@ class _AddProductPageState extends State<AddProductPage> {
   listproduit.clear();
   listproduit.add(
       const DropdownMenuItem(
-        value: 'Engrais',
+        value: 'engrais',
           child: Text(
             'Engrais', style: TextStyle(
               color: Colors.black54
@@ -49,7 +47,7 @@ class _AddProductPageState extends State<AddProductPage> {
   );
   listproduit.add(
     const DropdownMenuItem(
-      value: 'Semence',
+      value: 'semence',
       child: Text(
         'Semences', style: TextStyle(
           color: Colors.black54
@@ -58,7 +56,7 @@ class _AddProductPageState extends State<AddProductPage> {
   );
   listproduit.add(
     const DropdownMenuItem(
-      value: 'Herbicide',
+      value: 'herbicide',
       child: Text(
         'Herbicides', style: TextStyle(
           color: Colors.black54
@@ -67,7 +65,7 @@ class _AddProductPageState extends State<AddProductPage> {
   );
   listproduit.add(
     const DropdownMenuItem(
-      value: 'Pesticide',
+      value: 'pesticide',
       child: Text(
         'Pesticides', style: TextStyle(
           color: Colors.black54
@@ -76,7 +74,7 @@ class _AddProductPageState extends State<AddProductPage> {
   );
   listproduit.add(
     const DropdownMenuItem(
-      value: 'Provende',
+      value: 'provende',
       child: Text(
         'Provende', style: TextStyle(
           color: Colors.black54
@@ -85,7 +83,7 @@ class _AddProductPageState extends State<AddProductPage> {
   );
   listproduit.add(
     const DropdownMenuItem(
-      value: 'Machine',
+      value: 'machine',
       child: Text(
         'Machines', style: TextStyle(
           color: Colors.black54
@@ -425,19 +423,6 @@ final _formKey = GlobalKey<FormState>();
                                     imageAvailable = false;
                                     _photoUrl = null;
                                   });
-                                  /*showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      title: const Text('Error uploading image'),
-                                      content: const Text('An error occurred while uploading the image.'),
-                                      actions: [
-                                        TextButton(
-                                          child: const Text('OK'),
-                                          onPressed: () => Navigator.pop(context),
-                                        ),
-                                      ],
-                                    ),
-                                  );*/
                                 }
                                 setState(() {
                                   // reset the flag to indicate that the upload is complete
@@ -510,6 +495,7 @@ final _formKey = GlobalKey<FormState>();
 
 
                                       // Map with the input data
+                                      String userId = FirebaseAuth.instance.currentUser!.uid;
                                       Map<String, dynamic> dataTosave={
                                         'name': itemName,
                                         'organisation': itemOrganization,
@@ -520,6 +506,7 @@ final _formKey = GlobalKey<FormState>();
                                         'isChecked': _isChecked! ? true : false,
                                         'producttype': _selectedProduct,
                                         'photo' : _photoUrl,
+                                        'userId': userId,
                                       };
 
                                       const Center(
@@ -550,7 +537,7 @@ final _formKey = GlobalKey<FormState>();
                                                   Navigator.pushReplacement(
                                                     context,
                                                     PageRouteBuilder(
-                                                      pageBuilder: (context, animation, secondaryAnimation) => const AllproductPage(),
+                                                      pageBuilder: (context, animation, secondaryAnimation) => const AdminPage(),
                                                       transitionsBuilder: (context, animation, secondaryAnimation, child) {
                                                         return SlideTransition(
                                                           position: Tween<Offset>(

@@ -3,6 +3,7 @@ import 'package:card_loading/card_loading.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:responsive_grid_list/responsive_grid_list.dart';
+import 'main.dart';
 import 'utils/colors_utils.dart';
 
 class AllproductPage extends StatefulWidget {
@@ -91,8 +92,22 @@ class _AllproductPageState extends State<AllproductPage> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            // passing this to our root
-            Navigator.of(context).pop();
+            Navigator.pushReplacement(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) => const HomePage(),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  return SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0, 0),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
+                  );
+                },
+              ),
+
+            );
           },
         ),
         actions: <Widget>[
