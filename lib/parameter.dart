@@ -134,26 +134,48 @@ class _ParameterPageState extends State<ParameterPage> {
             SizedBox(
               child: ElevatedButton(
                 onPressed: () {
-                Navigator.of(context).popUntil((route) => route.isFirst);
-                setState(() {
-                GoogleSignIn().signOut();
-                FirebaseAuth.instance.signOut();
-                Navigator.push(
-                context,
-                PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) => const LoginPage(),
-                        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                          return SlideTransition(
-                            position: Tween<Offset>(
-                              begin: const Offset(0, 0),
-                              end: Offset.zero,
-                            ).animate(animation),
-                            child: child,
-                          );
-                        },
-                      ),
-                    );
-                  });
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Confirmation'),
+                        content: const Text('Êtes-vous sûr de vouloir vous déconnecter ?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop(); // Ferme la boîte de dialogue
+                            },
+                            child: const Text('Annuler'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).popUntil((route) => route.isFirst);
+                              setState(() {
+                                GoogleSignIn().signOut();
+                                FirebaseAuth.instance.signOut();
+                                Navigator.push(
+                                  context,
+                                  PageRouteBuilder(
+                                    pageBuilder: (context, animation, secondaryAnimation) => const LoginPage(),
+                                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                      return SlideTransition(
+                                        position: Tween<Offset>(
+                                          begin: const Offset(0, 0),
+                                          end: Offset.zero,
+                                        ).animate(animation),
+                                        child: child,
+                                      );
+                                    },
+                                  ),
+                                );
+                              });
+                            },
+                            child: const Text('Oui'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
                 },
                 style: ButtonStyle(
                   backgroundColor: MaterialStateProperty.all<Color>(Colors.lightGreen),
@@ -161,6 +183,7 @@ class _ParameterPageState extends State<ParameterPage> {
                 ),
                 child: const Text('Déconnexion'),
               ),
+
             ),
           ],
         ),

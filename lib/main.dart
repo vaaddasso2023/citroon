@@ -1131,31 +1131,3 @@ class _HomePageState extends State<HomePage> {
 enum DrawerSections{
   parameter, help, cgu,
 }
-/*IconData getWeatherIcon(String weatherMain) {
-  switch (weatherMain) {
-    case 'Thunderstorm':
-      return Icons.flash_on;
-    case 'Drizzle':
-    case 'Rain':
-      return Icons.opacity;
-    case 'Snow':
-      return Icons.ac_unit;
-    case 'Mist':
-    case 'Smoke':
-    case 'Haze':
-    case 'Dust':
-    case 'Fog':
-    case 'Sand':
-    case 'Ash':
-    case 'Squall':
-    case 'Tornado':
-      return Icons.blur_on;
-    case 'Clear':
-      return Icons.wb_sunny;
-    case 'Clouds':
-      return Icons.cloud;
-    default:
-      return Icons.help_outline;
-  }
-}*/
-

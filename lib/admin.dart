@@ -272,8 +272,15 @@ class _AdminPageState extends State<AdminPage> {
         ),
       ),
       body: ListView.builder(
-        itemCount: userDocuments.length,
+        itemCount: userDocuments.isNotEmpty ? userDocuments.length : 1, // Vérifier si la liste n'est pas vide
         itemBuilder: (context, index) {
+          if (userDocuments.isEmpty) {
+            // Liste vide, afficher l'image
+            return Container(
+                padding: EdgeInsets.fromLTRB(80.0, 200.0, 80.0, 0.0),
+                child: Center(child: Image.asset('assets/images/zerop.png')));
+          }
+
           Map<String, dynamic> documentData = userDocuments[index];
           Map<String, dynamic> editableData = editableUserDocuments[index];
 
@@ -334,6 +341,7 @@ class _AdminPageState extends State<AdminPage> {
           );
         },
       ),
+
 
       floatingActionButton: FloatingActionButton(
         backgroundColor: hexStringToColor("2f6241"),
