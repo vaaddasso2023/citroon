@@ -288,6 +288,7 @@ class _FeedPageState extends State<FeedPage> {
                                           ),
                                         ),
                                       ),
+                                      SizedBox(height: 15),
                                     ],
                                   ),
                                 ),
@@ -295,7 +296,10 @@ class _FeedPageState extends State<FeedPage> {
                                 Positioned(
                                   top: 35,
                                   right: 30,
-                                  child: Container(
+                                  child:
+                                  isLoading
+                                      ? const CardLoading(height: 50)
+                                      : Container(
                                     padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
                                     decoration: BoxDecoration(
                                       color: Colors.red,

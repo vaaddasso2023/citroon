@@ -288,6 +288,7 @@ class _FertilizerPageState extends State<FertilizerPage> {
                                           ),
                                         ),
                                       ),
+                                      SizedBox(height: 15),
                                     ],
                                   ),
                                 ),
@@ -295,7 +296,10 @@ class _FertilizerPageState extends State<FertilizerPage> {
                                 Positioned(
                                   top: 35,
                                   right: 30,
-                                  child: Container(
+                                  child:
+                                  isLoading
+                                      ? const CardLoading(height: 50)
+                                      : Container(
                                     padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
                                     decoration: BoxDecoration(
                                       color: Colors.red,

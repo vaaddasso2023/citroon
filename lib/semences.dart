@@ -289,6 +289,7 @@ class _SeedPageState extends State<SeedPage> {
                                           ),
                                         ),
                                       ),
+                                      SizedBox(height: 15),
                                     ],
                                   ),
                                 ),
@@ -296,7 +297,10 @@ class _SeedPageState extends State<SeedPage> {
                                 Positioned(
                                   top: 35,
                                   right: 30,
-                                  child: Container(
+                                  child:
+                                  isLoading
+                                      ? const CardLoading(height: 50)
+                                      : Container(
                                     padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
                                     decoration: BoxDecoration(
                                       color: Colors.red,
@@ -314,9 +318,9 @@ class _SeedPageState extends State<SeedPage> {
                                 ),
                               ],
                             );
-                          }),
+                           }
+                          ),
                         );
-
                       }
                       return const Center(child: CircularProgressIndicator());
                     }
