@@ -145,7 +145,8 @@ class _ParameterPageState extends State<ParameterPage> {
                             onPressed: () {
                               Navigator.of(context).pop(); // Ferme la boîte de dialogue
                             },
-                            child: const Text('Annuler'),
+                            child: const Text('Annuler',
+                              style: TextStyle(color: Colors.green),),
                           ),
                           TextButton(
                             onPressed: () {
@@ -170,7 +171,8 @@ class _ParameterPageState extends State<ParameterPage> {
                                 );
                               });
                             },
-                            child: const Text('Oui'),
+                            child: const Text('Oui',
+                            style: TextStyle(color: Colors.green),),
                           ),
                         ],
                       );

@@ -163,10 +163,10 @@ class _LoginPageState extends State<LoginPage> {
         ),
         child: isLoading
             ? Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
-          ),
-        )
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+                ),
+              )
             : const Text(
           "Se connecter",
           textAlign: TextAlign.center,

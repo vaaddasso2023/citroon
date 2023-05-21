@@ -9,20 +9,28 @@ import 'package:citroon/semences.dart';
 import 'package:citroon/login.dart';
 import 'package:citroon/touslesproduits.dart';
 import 'package:citroon/utils/colors_utils.dart';
+import 'package:citroon/utils/main_controller.dart';
+import 'package:citroon/utils/our_themes.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:responsive_grid_list/responsive_grid_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:velocity_x/velocity_x.dart';
 import 'dart:async';
 import 'cgu.dart';
+import 'conts/strings.dart';
 import 'firebase_options.dart';
 import 'help.dart';
 import 'machinerie.dart';
+import 'meteo.dart';
+import 'models/current_weather_model.dart';
 import 'my_drawer_header.dart';
 import 'utils/user_model.dart';
-
-
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 
 
 Future main() async {
@@ -41,6 +49,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return  MaterialApp(
       debugShowCheckedModeBanner: false,
+      // theme: CustomThemes.lightTheme,
+      //darkTheme: CustomThemes.darkTheme,
+      // themeMode: ThemeMode.system,
       home:  isLoggedIn! ? const HomePage() : const LoginPage(),
     );
   }
@@ -111,6 +122,11 @@ class _HomePageState extends State<HomePage> {
       isLoading = false;
     });
 
+    initializeDateFormatting('fr', null);
+    var date = DateFormat.yMMMMd('fr_FR').format(DateTime.now());
+    //var theme = Theme.of(context);
+    var controller = Get.put(MainController());
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: hexStringToColor("2f6241"),
@@ -135,69 +151,129 @@ class _HomePageState extends State<HomePage> {
           ),
           child: Column(
             children: [
-            Card(
-                color: hexStringToColor("2f6241"),
-              elevation: 3.0,
-              shape: RoundedRectangleBorder(
-                //borderRadius: BorderRadius.circular(30.0),
-              ),
-              child: Row(
-                children: [
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(23.0),
-                    child: isLoading
-                      ? const CardLoading(
-                        height: 100,
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
-                        margin: EdgeInsets.only(bottom: 0),
-                      )
-                    : Stack(
-                        children: [
-                        const Padding(
-                          padding: EdgeInsets.fromLTRB(10.0, 10.0, 0.0, 10.0),
-                        ),
-                       // Ajoutez ici le code pour afficher la météo du jour suivant
-                       // _weather != null
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: const <Widget>[
-                            Text(
-                            'Météo à afficher',
-                            style: TextStyle(fontSize: 14,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold),
-                             ),
-                          ],
-                        )
-                          //  : CircularProgressIndicator(),
-                      ],
-                    ),
+            Container(
+              child: Obx(
+              () => controller.isloaded.value == true
+                ? Card(
+                    color: hexStringToColor("2f6241"),
+                  elevation: 3.0,
+                  shape: const RoundedRectangleBorder(
+                    //borderRadius: BorderRadius.circular(30.0),
                   ),
+                  child: FutureBuilder(
+                      future: controller.currentWeatherData,
+                      builder: (BuildContext context, AsyncSnapshot snapshot) {
+                      if (snapshot.hasData){
+                        CurrentWeatherData data = snapshot.data;
+                        return Row(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.all(23.0),
+                                child: isLoading
+                                    ? const CardLoading(
+                                  height: 100,
+                                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                                  margin: EdgeInsets.only(bottom: 0),
+                                )
+                                    : Stack(
+                                      children: [
+                                        const Padding(
+                                          padding: EdgeInsets.fromLTRB(10.0, 10.0, 0.0, 10.0),
+                                        ),
+                                        // Ajoutez ici le code pour afficher la météo du jour suivant
+                                        // _weather != null
+                                        Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            "${data.name}"
+                                                .text
+                                                .uppercase
+                                                .fontFamily("poppins_bold")
+                                                .size(18)
+                                                .letterSpacing(3)
+                                                .color(Colors.white)
+                                                .make(),
+                                      ],
+                                    )
+                                    //  : CircularProgressIndicator(),
+                                  ],
+                                ),
+                              ),
 
-                ),
-
-                Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.all(23.0),
-                      child: isLoading
-                          ? const CardLoading(
-                        height: 100,
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
-                        margin: EdgeInsets.only(bottom: 0),
-                      )
-                          : Stack(
-                             children: const [
-                            Padding(
-                              padding: EdgeInsets.fromLTRB(10.0, 10.0, 0.0, 10.0),
                             ),
-                            // Ajoutez ici le code pour afficher la météo du jour suivant
-                        ],
-                      ),
-                    ),
+
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.all(5.0),
+                                child: isLoading
+                                    ? const CardLoading(
+                                  height: 100,
+                                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                                  margin: EdgeInsets.only(bottom: 0),
+                                )
+                                    : Stack(
+                                            children: [
+                                      const Padding(
+                                      padding: EdgeInsets.fromLTRB(10.0, 10.0, 0.0, 10.0),
+                                    ),
+                                              Image.asset(
+                                                "assets/weather/${data.weather![0].icon}.png",
+                                                width: 40,
+                                                height: 40,
+                                              ),
+                                              Container(
+                                                padding: EdgeInsets.only(left: 55.0),
+                                                child: RichText(
+                                                  text: TextSpan(
+                                                    children: [
+                                                      TextSpan(
+                                                        text: "${data.main!.temp}$degree",
+                                                        style: const TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 18,
+                                                          fontFamily: "poppins",
+                                                          fontWeight: FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                      TextSpan(
+                                                        text: "\n${data.weather![0].main}",
+                                                        style: const TextStyle(
+                                                          color: Colors.white,
+                                                          letterSpacing: 3,
+                                                          fontSize: 12,
+                                                          fontFamily: "poppins",
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              )
+                                                      // Ajoutez ici le code pour afficher la météo du jour suivant
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+                      else {
+                        return const Center(
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+                          ),
+                        );
+                      }
+                    }
                   ),
-              ],
-            ),
+                )
+                  : const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+                ),
+              ),
+
+              ),
             ),
 
             const SizedBox(height: 15.0),
@@ -682,11 +758,83 @@ class _HomePageState extends State<HomePage> {
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: const Text(
-                                      'Machinerie',
+                                      'Outillage',
                                       style: TextStyle(
                                         color: Colors.blueGrey,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                                  // Météo agricole
+
+                  InkWell(
+                    onTap: (){
+                      Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation, secondaryAnimation) => const MeteoPage(),
+                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                            return SlideTransition(
+                              position: Tween<Offset>(
+                                begin: const Offset(0, 0),
+                                end: Offset.zero,
+                              ).animate(animation),
+                              child: child,
+                            );
+                          },
+                        ),
+                      );
+                    },
+                    child: Card(
+                      elevation: 3.0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25.0),
+                      ),
+                      child:
+                      SizedBox(
+                        width: 110.0,
+                        child: isLoading
+                            ? const CardLoading(
+                          height: 100,
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                          margin: EdgeInsets.only(bottom: 0),
+                        )
+                            : Stack(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.fromLTRB(10.0, 10.0, 0.0, 10.0),
+                              child: Icon(Icons.cloudy_snowing,
+                                size: 30,
+                                color: Colors.blue,
+                              ),
+                            ),
+                            Positioned(
+                              bottom: 10,
+                              left: 10,
+                              right: 0,
+                              top: 10,
+                              child: Center(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: const Text(
+                                    'Agri Météo',
+                                    style: TextStyle(
+                                      color: Colors.blueGrey,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
                                     ),
                                   ),
                                 ),
@@ -1020,7 +1168,7 @@ class _HomePageState extends State<HomePage> {
   // ignore: non_constant_identifier_names
   Widget MyDrawerList() {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
+      padding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
       child: Column(
         children: [
           const SizedBox(height: 25),

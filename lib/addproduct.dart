@@ -2,12 +2,17 @@ import 'dart:core';
 import 'dart:typed_data';
 import 'package:citroon/utils/colors_utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'admin.dart';
+import 'package:path/path.dart' as path;
+
+
 
 class AddProductPage extends StatefulWidget {
   const AddProductPage({Key? key}) : super(key: key);
@@ -19,19 +24,23 @@ class AddProductPage extends StatefulWidget {
 class _AddProductPageState extends State<AddProductPage> {
   bool isUploading = false;
   List<DropdownMenuItem<String>> listproduit=[];
+
   final TextEditingController _controllerVendorName=TextEditingController();
   final TextEditingController _controllerOrganizationName=TextEditingController();
   final TextEditingController _controllerTelephone=TextEditingController();
   final TextEditingController _controllerProductName=TextEditingController();
   final TextEditingController _controllerProductDescription=TextEditingController();
   final TextEditingController _controllerProductPrice=TextEditingController();
-
   final CollectionReference _referenceIntrants = FirebaseFirestore.instance.collection('intrants');
   late Stream<QuerySnapshot> _streamIntrants;
 
+
+  PlatformFile? _selectedFile;
   File? file;
   ImagePicker image = ImagePicker();
   String? _selectedProduct;
+  bool _isUploading = false;
+
   void produits()
   {
   listproduit.clear();
@@ -92,8 +101,11 @@ class _AddProductPageState extends State<AddProductPage> {
   );
 }
 
+
+
 final _formKey = GlobalKey<FormState>();
   bool imageAvailable = false;
+  bool pdfAvailable = false;
   late Uint8List imageFile;
   bool ? _isChecked = false;
   String? _nomVendeur ;
@@ -103,8 +115,13 @@ final _formKey = GlobalKey<FormState>();
   String? _descriptionProduit;
   String? _price;
   String? _photoUrl;
+  String? _pdfUrl;
+  late List<int> _pdfBytes;
+  //late  pdfFile;
+  //File pdfFile = File("Uint8List");
+  File? pdfFile;
 
- @override
+  @override
   void initState() {
     super.initState();
    _streamIntrants = _referenceIntrants.snapshots();
@@ -389,9 +406,7 @@ final _formKey = GlobalKey<FormState>();
 
                         const SizedBox(height: 12,),
                         Form(
-
                           child: GestureDetector(
-
                             onTap: () async {
                               final image = await ImagePicker().pickImage(source: ImageSource.gallery);
                               if (image != null) {
@@ -458,11 +473,11 @@ final _formKey = GlobalKey<FormState>();
                             _isChecked = value == 'true';
                           },
                           builder: (FormFieldState<String> state) {
-                            return Column(
+                            return Row(
                               children: [
                                 Checkbox(
                                   value: _isChecked,
-                                  checkColor: Colors.green,
+                                  checkColor: Colors.white,
                                   onChanged: (value) {
                                     _isChecked = value!;
                                     setState(() {
@@ -472,13 +487,106 @@ final _formKey = GlobalKey<FormState>();
                                   visualDensity: VisualDensity.adaptivePlatformDensity,
                                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                 ),
-                                const Text('Produit certifié ? cochez la case si oui'),
+                                const Text('Intrant certifié / homologué ?'),
                               ],
                             );
                           },
                         ),
 
+                          // Ajout de fiche technique de l'intrant
                         const SizedBox(height: 12,),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.grey),
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  height: 80,
+                                  width: 250,
+                                  child: Stack(
+                                    children: [
+                                      pdfFile != null
+                                          ? PDFView(
+                                        filePath: pdfFile!.path, // Laisser vide pour charger à partir du fichier local
+                                       // path: path.basename(pdfFile!.path), // Obtenir le nom du fichier à partir du chemin
+                                        enableSwipe: true,
+                                        swipeHorizontal: true,
+                                        autoSpacing: false,
+                                        pageFling: false,
+                                        onRender: (pages) {
+                                          print("Nombre de pages : $pages");
+                                        },
+                                        onError: (error) {
+                                          print("Erreur lors du chargement du PDF : $error");
+                                        },
+                                      )
+                                          : const Center(
+                                            child: Icon(Icons.picture_as_pdf_outlined, size: 40),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.delete_outline,
+                                    color: Colors.grey,
+                                    size: 40,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      pdfFile = null; // Réinitialiser la variable pdfFile à null
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12,),
+                        Form(
+                          child: GestureDetector(
+                            onTap: () async {
+                              final FilePickerResult? result = await FilePicker.platform.pickFiles(
+                                type: FileType.custom,
+                                allowedExtensions: ['pdf'],
+                              );
+                              if (result != null) {
+                                final file = File(result.files.single.path!);
+                                if (file.existsSync()) {
+                                  final bytes = await file.readAsBytes();
+                                  setState(() {
+                                    pdfFile = file;
+                                  });
+                                  // ... le reste de votre code pour l'upload vers Firebase Storage
+                                }
+                                // ...
+                              }
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey),
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              height: 40,
+                              child: Center(
+                                child: isUploading
+                                    ? const CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+                                )
+                                    : const Text("Choisir la fiche technique du produit"),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 25,),
 
                         SizedBox(
                           width: double.infinity,

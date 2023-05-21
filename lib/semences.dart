@@ -20,6 +20,7 @@ class _SeedPageState extends State<SeedPage> {
   bool isLoading = true;
   bool isFavorite = false;
   Color _selectedIconColor =  hexStringToColor("2f6241");
+  bool isLoadingImage = true;
 
   final List<BottomNavigationBarItem> _bottomNavigationBarItems = [
     const BottomNavigationBarItem(
@@ -77,7 +78,7 @@ class _SeedPageState extends State<SeedPage> {
 
   @override
   Widget build(BuildContext context) {
-    Future.delayed(const Duration(seconds: 3)).then((value) {
+    Future.delayed(const Duration(milliseconds: 3)).then((value) {
       setState(() {
         isLoading = false;
       });
@@ -152,6 +153,15 @@ class _SeedPageState extends State<SeedPage> {
                                       Image.network(
                                         '${thisItem['itemProductImage']}',
                                         fit: BoxFit.cover,
+                                        loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                                          if (loadingProgress == null) {
+                                            isLoadingImage = false; // Chargement terminé
+                                            return child;
+                                          } else {
+                                            isLoadingImage = true; // Chargement en cours
+                                            return const CardLoading(height: 180); // Afficher le CardLoading pendant le chargement
+                                          }
+                                        },
                                       ),
                                       const SizedBox(height: 15),
                                       Row(

@@ -20,6 +20,7 @@ class _AllproductPageState extends State<AllproductPage> {
   bool isLoading = true;
   int _selectedIndex = 0;
   Color _selectedIconColor =  hexStringToColor("2f6241");
+  bool isLoadingImage = true;
 
   final List<BottomNavigationBarItem> _bottomNavigationBarItems = [
     const BottomNavigationBarItem(
@@ -78,7 +79,7 @@ class _AllproductPageState extends State<AllproductPage> {
 
   @override
   Widget build(BuildContext context) {
-    Future.delayed(const Duration(seconds: 3)).then((value) {
+    Future.delayed(const Duration(milliseconds: 3)).then((value) {
       setState(() {
         isLoading = false;
       });
@@ -175,7 +176,17 @@ class _AllproductPageState extends State<AllproductPage> {
                               Image.network(
                                 '${thisItem['itemProductImage']}',
                                 fit: BoxFit.cover,
+                                loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                                  if (loadingProgress == null) {
+                                    isLoadingImage = false; // Chargement terminé
+                                    return child;
+                                  } else {
+                                    isLoadingImage = true; // Chargement en cours
+                                    return const CardLoading(height: 180); // Afficher le CardLoading pendant le chargement
+                                  }
+                                },
                               ),
+
                               const SizedBox(height: 15),
                               Row(
                                 children: [
