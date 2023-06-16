@@ -9,13 +9,14 @@ class MainController extends GetxController {
     await getUserLocation();
     currentWeatherData = getCurrentWeather(latitude.value, longitude.value);
     hourlyWeatherData = getHourlyWeather(latitude.value, longitude.value);
-
+    fiveDayForecastWeatherData = getFiveDayForecastWeather(latitude.value, longitude.value);
     super.onInit();
   }
 
   var isDark = false.obs;
   dynamic currentWeatherData;
   dynamic hourlyWeatherData;
+  dynamic fiveDayForecastWeatherData;
   var latitude = 0.0.obs;
   var longitude = 0.0.obs;
 

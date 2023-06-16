@@ -1,8 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:card_loading/card_loading.dart';
+import 'package:citroon/productdetails.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:responsive_grid_list/responsive_grid_list.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'main.dart';
 import 'utils/colors_utils.dart';
 
@@ -16,7 +20,6 @@ class AllproductPage extends StatefulWidget {
 class _AllproductPageState extends State<AllproductPage> {
   late Stream<QuerySnapshot> _stream;
   final _reference = FirebaseFirestore.instance.collection('intrants');
-  bool isFavorite = false;
   bool isLoading = true;
   int _selectedIndex = 0;
   Color _selectedIconColor =  hexStringToColor("2f6241");
@@ -28,14 +31,15 @@ class _AllproductPageState extends State<AllproductPage> {
       label: 'Tout',
     ),
     const BottomNavigationBarItem(
-      icon: Icon(Icons.notifications_on_outlined),
-      label: 'Notification',
+      icon: Icon(Icons.shopping_cart_outlined),
+      label: 'Panier',
     ),
     const BottomNavigationBarItem(
       icon: Icon(Icons.favorite_outline_outlined),
       label: 'Favoris',
     ),
   ];
+
 
   void _onBottomNavigationItemTapped(int index) {
     setState(() {
@@ -57,6 +61,7 @@ class _AllproductPageState extends State<AllproductPage> {
   }
 
 
+
   @override
   void initState() {
     super.initState();
@@ -64,17 +69,60 @@ class _AllproductPageState extends State<AllproductPage> {
     isLoading = true;
   }
 
-  List<Map> parseData(QuerySnapshot querySnapshot) {
+
+  List<Favorite> parseData(QuerySnapshot querySnapshot) {
     List<QueryDocumentSnapshot> listDocs = querySnapshot.docs;
-    List<Map> listItems = listDocs
-        .map((e) => {'itemProductName': e['productname'],
-        'itemProductDescription': e['description'],
-        'itemProductPrice': e['price'],
-        'itemProductImage': e['photo'],
-       'itemProductType': e['producttype'],
-        })
-        .toList();
-    return listItems;
+    List<Favorite> favorites = listDocs.map((e) {
+      double price;
+      if (e['price'] is double) {
+        price = e['price'];
+      } else {
+        try {
+          price = double.parse(e['price']);
+        } catch (e) {
+          price = 0.0; // Set a default value when the parsing fails
+        }
+      }
+      return Favorite(
+        productName: e['productname'],
+        productDescription: e['description'],
+        productPrice:e['price'],
+        productImage: e['photo'],
+        productType: e['producttype'],
+        isFavorite: e['isFavorite'] ?? false,
+      );
+    }).toList();
+    return favorites;
+  }
+
+
+
+  Future<void> saveFavorites(List<Favorite> favorites) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    List<String> favoriteStrings = favorites.map((favorite) => jsonEncode(favorite)).toList();
+
+    await prefs.setStringList('favorites', favoriteStrings);
+  }
+
+  void toggleFavorite(Favorite favorite) {
+    setState(() {
+      favorite.isFavorite = !favorite.isFavorite;
+    });
+  }
+
+
+  String generateProductDetailsLink() {
+    String baseUrl = 'https://vaadd.page.link/citroon'; // Replace with your own Dynamic Links domain
+
+    String productName = Uri.encodeQueryComponent(['itemProductName'].toString());
+     String productImage = Uri.encodeQueryComponent(['itemProductImage'].toString());
+
+
+    String dynamicLink = '$baseUrl/?productName=$productName&productImage=$productImage'; // &productId=$productId;
+
+   // String dynamicLink = '$baseUrl/?productName=$productName&productImage=$productImage';
+    return dynamicLink;
   }
 
   @override
@@ -107,7 +155,6 @@ class _AllproductPageState extends State<AllproductPage> {
                   );
                 },
               ),
-
             );
           },
         ),
@@ -158,11 +205,19 @@ class _AllproductPageState extends State<AllproductPage> {
                     'itemProductPrice': e['price'],
                     'itemProductImage': e['photo'],
                     'itemProductType': e['producttype'],
+
                 }).toList();
                 return ResponsiveGridList(
                   minItemWidth: 170,
                   children: List.generate(items.length, (index) {
-                    Map thisItem = items[index];
+                    var thisItem = items[index];
+                    Favorite favorite = Favorite.fromJson({
+                      'productName': thisItem['itemProductName'] as String,
+                      'productDescription': thisItem['itemProductDescription'] as String,
+                      'productPrice': thisItem['itemProductPrice'],
+                      'productImage': thisItem['itemProductImage'] as String,
+                      'productType': thisItem['itemProductType'] as String,
+                    });
                     return Stack(
                       children: [
                         Card(
@@ -173,18 +228,42 @@ class _AllproductPageState extends State<AllproductPage> {
                               : Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              Image.network(
-                                '${thisItem['itemProductImage']}',
-                                fit: BoxFit.cover,
-                                loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                                  if (loadingProgress == null) {
-                                    isLoadingImage = false; // Chargement terminé
-                                    return child;
-                                  } else {
-                                    isLoadingImage = true; // Chargement en cours
-                                    return const CardLoading(height: 180); // Afficher le CardLoading pendant le chargement
-                                  }
+                              InkWell(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    PageRouteBuilder(
+                                      pageBuilder: (context, animation, secondaryAnimation) =>  ProductDetailsPage(thisItem),
+                                      transitionDuration: const Duration(milliseconds: 100), // Augmentez la durée de l'animation
+                                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                        return SlideTransition(
+                                          position: Tween<Offset>(
+                                            begin: const Offset(1, 0), // Position de départ (tout à droite)
+                                            end: Offset.zero, // Position finale (tout à gauche)
+                                          ).animate(animation),
+                                          child: child,
+                                        );
+                                      },
+                                    ),
+                                  );
+
                                 },
+                                child: SizedBox(
+                                  height: 150.0,
+                                  child: Image.network(
+                                    '${thisItem['itemProductImage']}',
+                                    fit: BoxFit.cover,
+                                    loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                                      if (loadingProgress == null) {
+                                        isLoadingImage = false; // Chargement terminé
+                                        return child;
+                                      } else {
+                                        isLoadingImage = true; // Chargement en cours
+                                        return const CardLoading(height: 180); // Afficher le CardLoading pendant le chargement
+                                      }
+                                    },
+                                  ),
+                                ),
                               ),
 
                               const SizedBox(height: 15),
@@ -232,98 +311,64 @@ class _AllproductPageState extends State<AllproductPage> {
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                       Container(
-                                         padding: EdgeInsets.only(left: 15.0),
-                                         child: InkWell(
-                                          onTap: () {
-                                            showDialog(
-                                              context: context,
-                                              builder: (context) {
-                                                return AlertDialog(
-                                                  title: const Text('Télécharger la fiche technique ?',
-                                                    style: TextStyle(
-                                                      color: Colors.grey,
-                                                      fontWeight: FontWeight.bold,
-                                                      fontSize: 14,
-                                                    ),
-                                                  ),
-                                                  actions: [
-                                                    TextButton(
-                                                      onPressed: () => Navigator.pop(context),
-                                                      child: const Text('Annuler'),
-                                                    ),
-                                                    TextButton(
-                                                      onPressed: () {
-                                                        // Télécharger le PDF ici
-                                                        Navigator.pop(context);
-                                                      },
-                                                      child: const Text('Télécharger'),
-                                                    ),
-                                                  ],
-                                                );
-                                              },
-                                            );
-                                          },
-                                          child: Container(
-                                            padding: const EdgeInsets.all(2),
-                                            child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: const [
-                                                Icon(Icons.cloud_download_outlined),
-                                                SizedBox(height: 5),
-                                                Text('Fiche',
-                                                  style: TextStyle(
-                                                    color: Colors.grey,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 10,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                      ),
-                                       ),
-                                       Container(
+                                       Padding(
+                                         padding: const EdgeInsets.all(16.0),
+                                         child: Container(
                                       padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 25),
                                       decoration: BoxDecoration(
-                                        color: hexStringToColor("2f6241"),
-                                        borderRadius: BorderRadius.circular(25),
+                                          color:  Colors.grey[300],// hexStringToColor("2f6241")
+                                          borderRadius: BorderRadius.circular(25),
                                       ),
                                       child: Text(
-                                        '${thisItem['itemProductType']}'.capitalize(),
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 12,
-                                        ),
+                                          '${thisItem['itemProductType']}',
+                                          style: const TextStyle(
+                                            color: Colors.black87,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12,
+                                          ),
                                       ),
+                                         ),
                                        ),
                                     Container(
                                         child: IconButton(
                                           icon: Icon(
-                                            isFavorite ? Icons.favorite : Icons.favorite_border,
-                                            color: Colors.green,
+                                            favorite.isFavorite ? Icons.favorite : Icons.favorite_outline,
+                                            color: favorite.isFavorite ? Colors.green : Colors.grey,
                                           ),
                                           onPressed: () {
-                                            setState(() {
-                                              isFavorite = !isFavorite;
-                                            });
+                                            toggleFavorite(favorite);
                                           },
                                         ),
-                                      ),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 15),
-                                        child: const Icon(
-                                          Icons.shopping_cart_outlined,
-                                          color: Colors.green,
-                                          size: 18,
+
+                                    ),
+                                      Padding(
+                                        padding: const EdgeInsets.all(16.0),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
+                                          child: IconButton(
+                                            icon: const Icon(
+                                              Icons.share_rounded,
+                                              color: Colors.green,
+                                              size: 25,
+                                            ),
+                                            onPressed: () {
+                                            String dynamicLink = generateProductDetailsLink();
+                                            String productName = '${thisItem['itemProductName']}';
+                                            String sharedText = '$productName\n$dynamicLink';
+                                            // Vous pouvez personnaliser sharedText selon vos besoins
+
+                                            Share.share(sharedText);
+                                            },
+                                          ),
+
                                         ),
+
                                       ),
                                     ],
                                   ),
                                 ),
                               ),
-                              SizedBox(height: 15),
+                              const SizedBox(height: 15),
                             ],
                           ),
                         ),
@@ -383,3 +428,58 @@ extension StringExtension on String {
     return '${this[0].toUpperCase()}${substring(1)}';
   }
 }
+
+// Classe Favorite
+
+class Favorite {
+  final String productName;
+  final String productDescription;
+  final String productPrice;
+  final String productImage;
+  final String productType;
+  bool isFavorite;
+
+// Ajoutez un getter pour récupérer la valeur du favori
+  bool get favorite => isFavorite;
+
+// Ajoutez un setter pour modifier la valeur du favori
+  set favorite(bool value) {
+    isFavorite = value;
+  }
+
+
+  Favorite({
+    required this.productName,
+    required this.productDescription,
+    required this.productPrice,
+    required this.productImage,
+    required this.productType,
+    this.isFavorite = false,
+  });
+
+  factory Favorite.fromJson(Map<String, dynamic> json) {
+    return Favorite(
+      productName: json['productName'],
+      productDescription: json['productDescription'],
+      productPrice: json['productPrice'], // Parse the string as double
+      productImage: json['productImage'],
+      productType: json['productType'],
+      isFavorite: json['isFavorite'] ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'productName': productName,
+      'productDescription': productDescription,
+      'productPrice': productPrice.toString(), // Convert double to string
+      'productImage': productImage,
+      'productType': productType,
+      'isFavorite': isFavorite,
+    };
+  }
+}
+
+
+
+

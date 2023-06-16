@@ -1,5 +1,6 @@
 import 'dart:core';
 import 'dart:typed_data';
+import 'package:citroon/parameter.dart';
 import 'package:citroon/utils/colors_utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
@@ -24,7 +25,8 @@ class AddProductPage extends StatefulWidget {
 class _AddProductPageState extends State<AddProductPage> {
   bool isUploading = false;
   List<DropdownMenuItem<String>> listproduit=[];
-
+  int _selectedIndex = 0;
+  Color _selectedIconColor =  hexStringToColor("2f6241");
   final TextEditingController _controllerVendorName=TextEditingController();
   final TextEditingController _controllerOrganizationName=TextEditingController();
   final TextEditingController _controllerTelephone=TextEditingController();
@@ -34,12 +36,73 @@ class _AddProductPageState extends State<AddProductPage> {
   final CollectionReference _referenceIntrants = FirebaseFirestore.instance.collection('intrants');
   late Stream<QuerySnapshot> _streamIntrants;
 
-
   PlatformFile? _selectedFile;
   File? file;
   ImagePicker image = ImagePicker();
   String? _selectedProduct;
   bool _isUploading = false;
+
+  final List<BottomNavigationBarItem> _bottomNavigationBarItems = [
+    const BottomNavigationBarItem(
+      icon: Icon(Icons.keyboard_option_key_outlined,),
+      label: 'Option',
+    ),
+    /*const BottomNavigationBarItem(
+      icon: Icon(Icons.keyboard_option_key_outlined,),
+      label: 'Mes intrants',
+    ),*/
+    const BottomNavigationBarItem(
+      icon: Icon(Icons.input_outlined),
+      label: 'Mes intrants',
+    ),
+  ];
+
+  void _onBottomNavigationItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+      switch (index) {
+        case 0:
+          Navigator.pushReplacement(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => const ParameterPage(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0, 0),
+                    end: Offset.zero,
+                  ).animate(animation),
+                  child: child,
+                );
+              },
+            ),
+          );
+          _selectedIconColor = hexStringToColor("2f6241");
+          break;
+        case 1:
+          Navigator.pushReplacement(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => const AdminPage(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0, 0),
+                    end: Offset.zero,
+                  ).animate(animation),
+                  child: child,
+                );
+              },
+            ),
+          );
+
+          _selectedIconColor = hexStringToColor("2f6241");
+          break;
+        default:
+          _selectedIconColor = hexStringToColor("2f6241");
+      }
+    });
+  }
 
   void produits()
   {
@@ -713,6 +776,14 @@ final _formKey = GlobalKey<FormState>();
         );
       }
     ),
+      bottomNavigationBar: BottomNavigationBar(
+        elevation: 10.0,
+        // backgroundColor: ,
+        currentIndex: _selectedIndex,
+        onTap: _onBottomNavigationItemTapped,
+        items: _bottomNavigationBarItems,
+        selectedItemColor: _selectedIconColor,
+      ),
   );
   }
 }

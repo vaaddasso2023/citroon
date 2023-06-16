@@ -20,7 +20,42 @@ class MeteoPage extends StatefulWidget {
 }
 
 class _MeteoPageState extends State<MeteoPage> {
+  int _selectedIndex = 0;
+  Color _selectedIconColor =  hexStringToColor("2f6241");
 
+  final List<BottomNavigationBarItem> _bottomNavigationBarItems = [
+    const BottomNavigationBarItem(
+      icon: Icon(Icons.help_outline_outlined,),
+      label: 'Aide',
+    ),
+    const BottomNavigationBarItem(
+      icon: Icon(Icons.notifications_on_outlined),
+      label: 'Notification',
+    ),
+    const BottomNavigationBarItem(
+      icon: Icon(Icons.contact_emergency_outlined),
+      label: 'Contact',
+    ),
+  ];
+
+  void _onBottomNavigationItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+      switch (index) {
+        case 0:
+          _selectedIconColor = hexStringToColor("2f6241");
+          break;
+        case 1:
+          _selectedIconColor = hexStringToColor("2f6241");
+          break;
+        case 2:
+          _selectedIconColor = hexStringToColor("2f6241");
+          break;
+        default:
+          _selectedIconColor = hexStringToColor("2f6241");
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +69,7 @@ class _MeteoPageState extends State<MeteoPage> {
         backgroundColor: Colors.white,
         appBar: AppBar(
           backgroundColor: hexStringToColor("2f6241"),
-          title: date.text.color(Colors.white).make(),
+          title: const Text ("Météo agricole"),// date.text.color(Colors.white).make(),
           elevation: 0.0,
           actions: [
 
@@ -64,12 +99,21 @@ class _MeteoPageState extends State<MeteoPage> {
                                 children: [
                                   "${data.name}"
                                       .text
-                                      .uppercase
-                                      .fontFamily("poppins_bold")
+                                      //.uppercase
+                                     // .fontFamily("poppins_bold")
                                       .size(24)
                                       .letterSpacing(3)
                                       .color(hexStringToColor("2f6241"))
                                       .make(),
+                                  Center(
+                                    child: SeparatorLineWithText(
+                                      text: date,
+                                      lineThickness: 1.0,
+                                      textSize: 16.0,
+                                      lineColor: Colors.grey,
+                                      textColor: hexStringToColor("2f6241"),
+                                    ),
+                                  ),
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
@@ -224,7 +268,6 @@ class _MeteoPageState extends State<MeteoPage> {
                                   shrinkWrap: true,
                                   itemCount: 7,
                                   itemBuilder: (BuildContext context, int index) {
-                                    // var day = DateFormat("EEEE").format(DateTime.now().add(Duration(days: index + 1)));
                                    var day = DateFormat.EEEE('fr_FR').format(DateTime.now().add(Duration(days: index + 1)));
                                    day = capitalizeFirstLetter(day);
                                     return Card(
@@ -286,7 +329,15 @@ class _MeteoPageState extends State<MeteoPage> {
                   ),
             ),
           ),
-        )
+        ),
+      bottomNavigationBar: BottomNavigationBar(
+      elevation: 10.0,
+      // backgroundColor: ,
+      currentIndex: _selectedIndex,
+      onTap: _onBottomNavigationItemTapped,
+      items: _bottomNavigationBarItems,
+      selectedItemColor: _selectedIconColor,
+    ),
     );
   }
 }

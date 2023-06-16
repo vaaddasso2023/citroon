@@ -5,7 +5,6 @@
 import 'dart:convert';
 
 CurrentWeatherData currentWeatherDataFromJson(String str) => CurrentWeatherData.fromJson(json.decode(str));
-
 class CurrentWeatherData {
   CurrentWeatherData({
     this.weather,
@@ -88,6 +87,7 @@ class Weather {
   factory Weather.fromJson(Map<String, dynamic> json) => Weather(
         main: json["main"],
         icon: json["icon"],
+
       );
 }
 

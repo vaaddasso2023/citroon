@@ -1,6 +1,7 @@
 import 'package:http/http.dart' as http;
 import '../conts/strings.dart';
 import '../models/current_weather_model.dart';
+import '../models/fiveDayForecast_weather_model.dart';
 import '../models/hourly_weather_model.dart';
 
 getCurrentWeather(lat, long) async {
@@ -18,6 +19,16 @@ getHourlyWeather(lat, long) async {
   var res = await http.get(Uri.parse(link));
   if (res.statusCode == 200) {
     var data = hourlyWeatherDataFromJson(res.body.toString());
+
+    return data;
+  }
+}
+
+getFiveDayForecastWeather(lat, long) async {
+  var link = "https://api.openweathermap.org/data/2.5/forecast?lat=$lat&lon=$long&appid=$apiKey&units=metric";
+  var res = await http.get(Uri.parse(link));
+  if (res.statusCode == 200) {
+    var data = fiveDayForecastWeatherDataFromJson(res.body.toString());
 
     return data;
   }

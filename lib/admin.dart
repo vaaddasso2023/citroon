@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:citroon/notifications.dart';
+import 'package:citroon/parameter.dart';
 import 'package:citroon/utils/colors_utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,26 +17,27 @@ class AdminPage extends StatefulWidget {
 }
 
 class _AdminPageState extends State<AdminPage> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 1;
   Color _selectedIconColor =  hexStringToColor("2f6241");
   String userId = FirebaseAuth.instance.currentUser!.uid;
+  int unreadNotificationsCount = 0;
 
   List<DropdownMenuItem<String>> listproduit=[];
   final TextEditingController _controllerVendorName=TextEditingController();
   final TextEditingController _controllerOrganizationName=TextEditingController();
-  final TextEditingController _controllerTelephone=TextEditingController();
+ /* final TextEditingController _controllerTelephone=TextEditingController();
   final TextEditingController _controllerProductName=TextEditingController();
   final TextEditingController _controllerProductDescription=TextEditingController();
-  final TextEditingController _controllerProductPrice=TextEditingController();
+  final TextEditingController _controllerProductPrice=TextEditingController(); */
 
   final CollectionReference _referenceIntrants = FirebaseFirestore.instance.collection('intrants');
   late Stream<QuerySnapshot> _streamIntrants;
   bool isEditing = false;
-  String? _documentId;
+ // String? _documentId;
   String documentId = '';
   File? file;
   ImagePicker image = ImagePicker();
-  String? _selectedProduct;
+ // String? _selectedProduct;
   Map<String, dynamic> updatedData = {};
   List<Map<String, dynamic>> userDocuments = [];
 
@@ -99,18 +102,17 @@ class _AdminPageState extends State<AdminPage> {
     );
   }
 
-  final _formKey = GlobalKey<FormState>();
+ // final _formKey = GlobalKey<FormState>();
   bool imageAvailable = false;
   late Uint8List imageFile;
-  bool ? _isChecked = false;
+  /* bool ? _isChecked = false;
   String? _nomVendeur ;
   String? _nomOrganisation ;
   String? _telephone ;
   String? _nomProduit ;
   String? _descriptionProduit;
   String? _price;
-  String? _photoUrl;
-
+  String? _photoUrl; */
   String itemName = '';
   String itemOrganization = '';
 
@@ -170,17 +172,17 @@ class _AdminPageState extends State<AdminPage> {
 
   final List<BottomNavigationBarItem> _bottomNavigationBarItems = [
     const BottomNavigationBarItem(
-      icon: Icon(Icons.list_alt_outlined,),
+      icon: Icon(Icons.person_3_rounded,),
+      label: 'Utilisateur',
+    ),
+    const BottomNavigationBarItem(
+      icon: Icon(Icons.input_outlined),
       label: 'Mes intrants',
     ),
-    const BottomNavigationBarItem(
-      icon: Icon(Icons.add_task_outlined),
-      label: 'Ajouter',
-    ),
-    const BottomNavigationBarItem(
+    /*const BottomNavigationBarItem(
       icon: Icon(Icons.help_outline_outlined),
       label: 'Aide',
-    ),
+    ),*/
   ];
 
   void _onBottomNavigationItemTapped(int index) {
@@ -188,26 +190,25 @@ class _AdminPageState extends State<AdminPage> {
       _selectedIndex = index;
       switch (index) {
         case 0:
+          Navigator.pushReplacement(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => const ParameterPage(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0, 0),
+                    end: Offset.zero,
+                  ).animate(animation),
+                  child: child,
+                );
+              },
+            ),
+
+          );
           _selectedIconColor = hexStringToColor("2f6241");
           break;
         case 1:
-
-      Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => const AddProductPage(),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      return SlideTransition(
-          position: Tween<Offset>(
-          begin: const Offset(0, 0),
-          end: Offset.zero,
-          ).animate(animation),
-          child: child,
-      );
-    },
-  ),
-
-);
           _selectedIconColor = hexStringToColor("2f6241");
           break;
         case 2:
@@ -261,92 +262,187 @@ class _AdminPageState extends State<AdminPage> {
      // backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: hexStringToColor("2f6241"),
-      title: const Text('Admin'),
+      title: const Text('Paramètres'),
         elevation: 5,
+        actions: <Widget>[
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Stack(
+              children: [
+                IconButton(
+                  icon: Icon(Icons.notifications_active_outlined),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>  NotificationsPage(),
+                        transitionDuration: const Duration(milliseconds: 100), // Augmentez la durée de l'animation
+                        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                          return SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(1, 0), // Position de départ (tout à droite)
+                              end: Offset.zero, // Position finale (tout à gauche)
+                            ).animate(animation),
+                            child: child,
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+                if (unreadNotificationsCount > 0)
+                  Container(
+                    width: 20,
+                    height: 20,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      '$unreadNotificationsCount',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
          // Navigator.of(context).popUntil((route) => route.isFirst);
            Navigator.of(context).pop();
           },
         ),
       ),
-      body: ListView.builder(
-        itemCount: userDocuments.isNotEmpty ? userDocuments.length : 1, // Vérifier si la liste n'est pas vide
-        itemBuilder: (context, index) {
-          if (userDocuments.isEmpty) {
-            // Liste vide, afficher l'image
-            return Container(
-                padding: EdgeInsets.fromLTRB(80.0, 200.0, 80.0, 0.0),
-                child: Center(child: Image.asset('assets/images/zerop.png')));
-          }
 
-          Map<String, dynamic> documentData = userDocuments[index];
-          Map<String, dynamic> editableData = editableUserDocuments[index];
-
-          // Extraire les champs éditables
-          String itemName = editableData['name'];
-          String itemOrganization = editableData['organisation'];
-          int documentNumber = index + 1; // Numéro du document
-
-          void updateItemName(String value) {
-            editableData['name'] = value;
-          }
-
-          void updateItemOrganization(String value) {
-            editableData['organisation'] = value;
-          }
-
-          return Card(
-            margin: const EdgeInsets.all(10.0),
-            elevation: 3.0,
-            child: ListTile(
-              title: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 15),
+      body: Stack(
+        children: [
+          ListView.builder(
+            itemCount: userDocuments.isNotEmpty ? userDocuments.length : 1, // Vérifier si la liste n'est pas vide
+            itemBuilder: (context, index) {
+              if (userDocuments.isEmpty) {
+                // Liste vide, afficher l'image
+                return Container(
+                    padding: const EdgeInsets.fromLTRB(80.0, 200.0, 80.0, 0.0),
                     decoration: BoxDecoration(
-                      color: hexStringToColor("2f6241"),
-                      borderRadius: BorderRadius.circular(25),
+                        gradient: LinearGradient(colors: [
+                          hexStringToColor("f9f9f9"),
+                          hexStringToColor("e3f4d7"),
+                          hexStringToColor("f9f9f9"),
+                        ], begin: Alignment.topCenter, end: Alignment.bottomCenter
+                        )
                     ),
-                    child: Text(
-                      'Intrant n° $documentNumber',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        fontSize: 13.0,
+                    child: Center(child: Image.asset('assets/images/zerop.png')));
+              }
+
+              // Map<String, dynamic> documentData = userDocuments[index];
+              Map<String, dynamic> editableData = editableUserDocuments[index];
+
+              // Extraire les champs éditables
+              String itemName = editableData['name'];
+              String itemOrganization = editableData['organisation'];
+              int documentNumber = index + 1;
+              void updateItemName(String value) {
+                editableData['name'] = value;
+              }
+              void updateItemOrganization(String value) {
+                editableData['organisation'] = value;
+              }
+              return Card(
+                margin: const EdgeInsets.all(10.0),
+                elevation: 3.0,
+                child: ListTile(
+                  title: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 15),
+                        decoration: BoxDecoration(
+                          color: hexStringToColor("2f6241"),
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        child: Text(
+                          'Intrant n° $documentNumber',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            fontSize: 13.0,
+                          ),
+                        ),
                       ),
-                    ),
+                      TextFormField(
+                        decoration: const InputDecoration(
+                          labelText: 'Nom du vendeur',
+                        ),
+                        initialValue: itemName,
+                        enabled: isEditing,
+                        onChanged: updateItemName,
+                      ),
+                      TextFormField(
+                        decoration: const InputDecoration(
+                          labelText: 'Organisation',
+                        ),
+                        initialValue: itemOrganization,
+                        enabled: isEditing,
+                        onChanged: updateItemOrganization,
+                      ),
+                    ],
                   ),
-                  TextFormField(
-                    decoration: const InputDecoration(
-                      labelText: 'Nom du vendeur',
-                    ),
-                    initialValue: itemName,
-                    enabled: isEditing,
-                    onChanged: updateItemName,
+                ),
+              );
+            },
+          ),
+          Positioned(
+            bottom: 16, // Modifier la position verticale selon vos besoins
+            left: 16, // Modifier la position horizontale selon vos besoins
+            child: FloatingActionButton.extended(
+              icon: const Icon(Icons.add_task_outlined),
+              label: const Text('Ajouter'),
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) => const AddProductPage(),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                      return SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0, 0),
+                          end: Offset.zero,
+                        ).animate(animation),
+                        child: child,
+                      );
+                    },
                   ),
-                  TextFormField(
-                    decoration: const InputDecoration(
-                      labelText: 'Organisation',
-                    ),
-                    initialValue: itemOrganization,
-                    enabled: isEditing,
-                    onChanged: updateItemOrganization,
-                  ),
-                ],
-              ),
+                );
+              },
+              backgroundColor: MaterialStateColor.resolveWith((Set<MaterialState> states) {
+                if (states.contains(MaterialState.pressed)) {
+                  return Colors.grey;
+                }
+                return Colors.lightGreen;
+              }),
             ),
-          );
-        },
+          ),
+        ],
       ),
 
-
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: hexStringToColor("2f6241"),
+      floatingActionButton: FloatingActionButton.extended(
+        // backgroundColor: hexStringToColor("2f6241"),
+        backgroundColor: MaterialStateColor.resolveWith((Set<MaterialState> states) {
+          if (states.contains(MaterialState.pressed)) {
+            return Colors.grey;
+          }
+          return Colors.lightGreen;
+        }),
         onPressed: isEditing ? saveChanges : startEditing,
-        child: Icon(isEditing ? Icons.save : Icons.edit),
+        label: Text(isEditing ? 'Enregistrer' : 'Modifier'),
+        icon: Icon(isEditing ? Icons.save : Icons.edit),
       ),
 
       // Navigation de bas de page

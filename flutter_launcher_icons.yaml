@@ -7,4 +7,4 @@ flutter_icons:
   macos: true
   windows: true
   web: true
-  image_path: "assets/images/icon.png"
+  image_path: "assets/images/icone.png"
